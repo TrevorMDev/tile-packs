@@ -18,4 +18,24 @@ public interface TilePacksConfig extends Config
 	{
 		return false;
 	}
+
+	@ConfigItem(
+			keyName = "borderWidth",
+			name = "Border Width",
+			description = "Width of the marked tile border"
+	)
+	default double borderWidth()
+	{
+		return 2;
+	}
+
+	@ConfigItem(
+			keyName = "fillOpacity",
+			name = "Fill Opacity",
+			description = "Opacity of the tile fill color"
+	)
+	default int fillOpacity()
+	{
+		return 50;
+	}
 }
