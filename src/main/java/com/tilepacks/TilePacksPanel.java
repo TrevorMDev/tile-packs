@@ -25,6 +25,8 @@
 
 package com.tilepacks;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -34,9 +36,9 @@ import net.runelite.client.ui.PluginPanel;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -45,32 +47,34 @@ class TilePacksPanel extends PluginPanel {
     private final TilePacksPlugin plugin;
     private final Gson gson;
 
+    private static final ImmutableMap<String, String> MARKERS = new ImmutableMap.Builder<String, String>()
+            .put("Test pack 1", "[{\"regionId\":9776,\"regionX\":10,\"regionY\":16,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":8,\"regionY\":16,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":9,\"regionY\":15,\"z\":0,\"color\":\"#FFF1FF00\"}]")
+            .put("Test pack 2", "[{\"regionId\":9776,\"regionX\":10,\"regionY\":18,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":8,\"regionY\":18,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":9,\"regionY\":17,\"z\":0,\"color\":\"#FFF1FF00\"}]")
+            .build();
+
     private final JPanel listContainer = new JPanel();
 
     TilePacksPanel(TilePacksPlugin plugin, Gson gson) {
         super();
         this.plugin = plugin;
         this.gson = gson;
+        add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1));
         listContainer.setBackground(Color.black);
-//        JsonElement json = gson.fromJson("[{\"regionId\":6972,\"regionX\":48,\"regionY\":52,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":6972,\"regionX\":33,\"regionY\":31,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":6972,\"regionX\":33,\"regionY\":35,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":6972,\"regionX\":33,\"regionY\":33,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":6972,\"regionX\":48,\"regionY\":43,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":6972,\"regionX\":48,\"regionY\":53,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":6972,\"regionX\":48,\"regionY\":51,\"z\":0,\"color\":\"#FFF1FF00\"}]", JsonElement.class);
-//        log.info("json", json.toString());
-//        String jsonString = json.getAsString();
-//        log.info("jsonString", jsonString);
-//        List<GroundMarkerPoint> markers = gson.fromJson(jsonString, new TypeToken<List<GroundMarkerPoint>>() {
-//        }.getType());
-        List<GroundMarkerPoint> markers = new ArrayList<GroundMarkerPoint>();
-        markers.add(new GroundMarkerPoint(9776, 10, 16, 0, Color.decode("#F1FF00"), null));
-        markers.add(new GroundMarkerPoint(9776, 8, 16, 0, Color.decode("#F1FF00"), null));
-        markers.add(new GroundMarkerPoint(9776, 9, 15, 0, Color.decode("#F1FF00"), null));//TODO how do make this easily expandable, and also support opacity from hex codes.
 
+        loadPacks();
+    }
 
-//                = Arrays.asList([{"regionId":9776,"regionX":10,"regionY":16,"z":0,"color":"#FFF1FF00"},{"regionId":9776,"regionX":8,"regionY":16,"z":0,"color":"#FFF1FF00"},{"regionId":9776,"regionX":9,"regionY":15,"z":0,"color":"#FFF1FF00"}])
-
-        log.info("markers");
-        log.info(markers.toString());
-        JPanel tile = new TilePack(plugin, "Arceuus Runecrafting Shortcuts", markers);
-        add(listContainer);
-        listContainer.add(tile);
+    private void loadPacks()
+    {
+        for (Map.Entry<String,String> entry : MARKERS.entrySet()) {
+            log.info("key {} value {}", entry.getKey(), entry.getValue());
+            List<GroundMarkerPoint> markers = gson.fromJson(
+                    entry.getValue(),
+                    new TypeToken<List<GroundMarkerPoint>>(){}.getType());
+            log.info("markers {}", markers.toString());
+            JPanel tile2 = new TilePack(plugin,  entry.getKey(), markers);
+            listContainer.add(tile2);
+        }
     }
 }

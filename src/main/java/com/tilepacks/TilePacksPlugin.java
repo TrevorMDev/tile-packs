@@ -99,7 +99,6 @@ public class TilePacksPlugin extends Plugin
 				.panel(panel)
 				.build();
 
-		loadPoints();
 
 		if(config.hidePlugin()) {
 			log.info("tile packs hidden, skipping adding");
@@ -107,6 +106,8 @@ public class TilePacksPlugin extends Plugin
 		}
 
 		clientToolbar.addNavigation(navButton);
+
+		loadPoints();
 		log.info("Tile Packs Plugin started");
 	}
 
@@ -280,11 +281,15 @@ public class TilePacksPlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
-		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
+		if (gameStateChanged.getGameState() != GameState.LOGGED_IN)
 		{
-//			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Example says " + config.greeting(), null);
+			return;
 		}
+
+		// map region has just been updated
+		loadPoints();
 	}
+
 
 	@Provides
 	TilePacksConfig provideConfig(ConfigManager configManager)
