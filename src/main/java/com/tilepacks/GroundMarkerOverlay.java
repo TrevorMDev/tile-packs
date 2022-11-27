@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2018, TheLonelyDev <https://github.com/TheLonelyDev>
  * Copyright (c) 2018, Adam <Adam@sigterm.info>
+ * Copyright (c) 2022, Trevor <https://github.com/TrevorMartz>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,28 +27,19 @@
 package com.tilepacks;
 
 import com.google.common.base.Strings;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Stroke;
-import java.util.Collection;
-import javax.annotation.Nullable;
-import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.client.ui.overlay.Overlay;
-import net.runelite.client.ui.overlay.OverlayLayer;
-import net.runelite.client.ui.overlay.OverlayPosition;
-import net.runelite.client.ui.overlay.OverlayPriority;
-import net.runelite.client.ui.overlay.OverlayUtil;
+import net.runelite.client.ui.overlay.*;
 
-public class GroundMarkerOverlay extends Overlay
-{
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import java.awt.*;
+import java.util.Collection;
+
+public class GroundMarkerOverlay extends Overlay {
     private static final int MAX_DRAW_DISTANCE = 32;
 
     private final Client client;
@@ -55,8 +47,7 @@ public class GroundMarkerOverlay extends Overlay
     private final TilePacksPlugin plugin;
 
     @Inject
-    private GroundMarkerOverlay(Client client, TilePacksConfig config, TilePacksPlugin plugin)
-    {
+    private GroundMarkerOverlay(Client client, TilePacksConfig config, TilePacksPlugin plugin) {
         this.client = client;
         this.config = config;
         this.plugin = plugin;
@@ -66,20 +57,16 @@ public class GroundMarkerOverlay extends Overlay
     }
 
     @Override
-    public Dimension render(Graphics2D graphics)
-    {
+    public Dimension render(Graphics2D graphics) {
         final Collection<ColorTileMarker> points = plugin.getPoints();
-        if (points.isEmpty())
-        {
+        if (points.isEmpty()) {
             return null;
         }
 
         Stroke stroke = new BasicStroke((float) config.borderWidth());
-        for (final ColorTileMarker point : points)
-        {
+        for (final ColorTileMarker point : points) {
             WorldPoint worldPoint = point.getWorldPoint();
-            if (worldPoint.getPlane() != client.getPlane())
-            {
+            if (worldPoint.getPlane() != client.getPlane()) {
                 continue;
             }
 
@@ -91,32 +78,26 @@ public class GroundMarkerOverlay extends Overlay
         return null;
     }
 
-    private void drawTile(Graphics2D graphics, WorldPoint point, Color color, @Nullable String label, Stroke borderStroke)
-    {
+    private void drawTile(Graphics2D graphics, WorldPoint point, Color color, @Nullable String label, Stroke borderStroke) {
         WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
 
-        if (point.distanceTo(playerLocation) >= MAX_DRAW_DISTANCE)
-        {
+        if (point.distanceTo(playerLocation) >= MAX_DRAW_DISTANCE) {
             return;
         }
 
         LocalPoint lp = LocalPoint.fromWorld(client, point);
-        if (lp == null)
-        {
+        if (lp == null) {
             return;
         }
 
         Polygon poly = Perspective.getCanvasTilePoly(client, lp);
-        if (poly != null)
-        {
+        if (poly != null) {
             OverlayUtil.renderPolygon(graphics, poly, color, new Color(0, 0, 0, config.fillOpacity()), borderStroke);
         }
 
-        if (!Strings.isNullOrEmpty(label))
-        {
+        if (!Strings.isNullOrEmpty(label)) {
             Point canvasTextLocation = Perspective.getCanvasTextLocation(client, graphics, lp, label, 0);
-            if (canvasTextLocation != null)
-            {
+            if (canvasTextLocation != null) {
                 OverlayUtil.renderTextLocation(graphics, canvasTextLocation, label, color);
             }
         }

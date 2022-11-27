@@ -25,21 +25,22 @@
 
 package com.tilepacks;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.components.IconTextField;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.List;
+import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
+import static com.tilepacks.TilePacksPlugin.PACKS;
 
 @Slf4j
 class TilePacksPanel extends PluginPanel {
@@ -47,34 +48,58 @@ class TilePacksPanel extends PluginPanel {
     private final TilePacksPlugin plugin;
     private final Gson gson;
 
-    private static final ImmutableMap<String, String> MARKERS = new ImmutableMap.Builder<String, String>()
-            .put("Test pack 1", "[{\"regionId\":9776,\"regionX\":10,\"regionY\":16,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":8,\"regionY\":16,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":9,\"regionY\":15,\"z\":0,\"color\":\"#FFF1FF00\"}]")
-            .put("Test pack 2", "[{\"regionId\":9776,\"regionX\":10,\"regionY\":18,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":8,\"regionY\":18,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":9,\"regionY\":17,\"z\":0,\"color\":\"#FFF1FF00\"}]")
-            .build();
-
     private final JPanel listContainer = new JPanel();
+    private final IconTextField searchBar;
 
     TilePacksPanel(TilePacksPlugin plugin, Gson gson) {
         super();
         this.plugin = plugin;
         this.gson = gson;
+
+        this.searchBar = new IconTextField();
+        searchBar.setIcon(IconTextField.Icon.SEARCH);
+        searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
+        searchBar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+        searchBar.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);
+        searchBar.setMinimumSize(new Dimension(0, 30));
+        searchBar.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                loadPacks();
+            }
+        });
+        searchBar.addClearListener(() -> loadPacks());
+        add(searchBar);
+
         add(listContainer);
-        listContainer.setLayout(new GridLayout(0, 1));
-        listContainer.setBackground(Color.black);
+        listContainer.setLayout(new GridLayout(0, 1, 0, 0));
 
         loadPacks();
     }
 
-    private void loadPacks()
-    {
-        for (Map.Entry<String,String> entry : MARKERS.entrySet()) {
-            log.info("key {} value {}", entry.getKey(), entry.getValue());
-            List<GroundMarkerPoint> markers = gson.fromJson(
-                    entry.getValue(),
-                    new TypeToken<List<GroundMarkerPoint>>(){}.getType());
-            log.info("markers {}", markers.toString());
-            JPanel tile2 = new TilePack(plugin,  entry.getKey(), markers);
-            listContainer.add(tile2);
+    private void loadPacks() {
+        listContainer.removeAll();
+        String search = searchBar.getText();
+        List<String> enabledPacks = plugin.loadEnabledPacks();
+        for (Map.Entry<String, String> pack : PACKS.entrySet()) {
+            if (Strings.isNullOrEmpty(search) || pack.getKey().toLowerCase().contains(search.toLowerCase())) {
+                List<GroundMarkerPoint> markers = gson.fromJson(
+                        pack.getValue(),
+                        new TypeToken<List<GroundMarkerPoint>>() {
+                        }.getType());
+                JPanel tile = new PackPanel(plugin, pack.getKey(), markers, enabledPacks.contains(pack.getKey()));
+                listContainer.add(tile);
+            }
         }
+        listContainer.revalidate();
+        listContainer.repaint();
     }
 }

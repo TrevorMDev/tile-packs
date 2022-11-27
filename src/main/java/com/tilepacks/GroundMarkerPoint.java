@@ -27,18 +27,18 @@
  */
 package com.tilepacks;
 
-import java.awt.Color;
-import javax.annotation.Nullable;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.awt.*;
 
 /**
  * Used for serialization of ground marker points.
  */
 @Value
-@EqualsAndHashCode(exclude = { "color", "label" })
-class GroundMarkerPoint
-{
+@EqualsAndHashCode(exclude = {"color", "label"})
+class GroundMarkerPoint {
     private int regionId;
     private int regionX;
     private int regionY;
