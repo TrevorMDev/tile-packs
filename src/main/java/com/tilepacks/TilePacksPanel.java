@@ -88,14 +88,11 @@ class TilePacksPanel extends PluginPanel {
     private void loadPacks() {
         listContainer.removeAll();
         String search = searchBar.getText();
-        List<String> enabledPacks = plugin.loadEnabledPacks();
-        for (Map.Entry<String, String> pack : PACKS.entrySet()) {
-            if (Strings.isNullOrEmpty(search) || pack.getKey().toLowerCase().contains(search.toLowerCase())) {
-                List<GroundMarkerPoint> markers = gson.fromJson(
-                        pack.getValue(),
-                        new TypeToken<List<GroundMarkerPoint>>() {
-                        }.getType());
-                JPanel tile = new PackPanel(plugin, pack.getKey(), markers, enabledPacks.contains(pack.getKey()));
+        List<Integer> enabledPacks = plugin.loadEnabledPacks();
+        for (Map.Entry<Integer, TilePack> pack : PACKS.entrySet()) {
+            //TODO add search keys to the TilePack so you can search on more than the name.
+            if (Strings.isNullOrEmpty(search) || pack.getValue().packName.contains(search.toLowerCase())) {
+                JPanel tile = new PackPanel(plugin, gson, pack.getValue(), enabledPacks.contains(pack.getKey()));
                 listContainer.add(tile);
             }
         }

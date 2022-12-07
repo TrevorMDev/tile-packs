@@ -26,6 +26,8 @@
 
 package com.tilepacks;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
@@ -52,6 +54,7 @@ class PackPanel extends JPanel {
     private static final ImageIcon REMOVE_ICON_HOVER;
 
     private final TilePacksPlugin plugin;
+    private final Gson gson;
 
     private final JPanel rowContainer = new JPanel();
     private JLabel packName;
@@ -70,17 +73,24 @@ class PackPanel extends JPanel {
         REMOVE_ICON_HOVER = new ImageIcon(removeIconHover);
     }
 
-    PackPanel(TilePacksPlugin plugin, String name, List<GroundMarkerPoint> points, boolean enabled) {
+    PackPanel(TilePacksPlugin plugin, Gson gson, TilePack pack, boolean enabled) {
         super();
         this.plugin = plugin;
-        this.points = points;
+        this.gson = gson;
+
+
+        this.points =  gson.fromJson(
+                        pack.packTiles,
+                        new TypeToken<List<GroundMarkerPoint>>() {
+                        }.getType());
+
         rowContainer.setLayout(new BorderLayout());
         rowContainer.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         rowContainer.setPreferredSize(new Dimension(ROW_WIDTH, ROW_HEIGHT));
         rowContainer.setBorder(new EmptyBorder(8, 8, 6, 8));
         add(rowContainer);
 
-        packName = new JLabel(name);
+        packName = new JLabel(pack.packName);
         packName.setFont(FontManager.getRunescapeFont());
         rowContainer.add(packName, BorderLayout.WEST);
 
@@ -90,7 +100,7 @@ class PackPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    plugin.addEnabledPack(name);
+                    plugin.addEnabledPack(pack.id);
                     plugin.importGroundMarkers(points);
                     rowContainer.add(removePack, BorderLayout.EAST);
                     rowContainer.remove(addPack);
@@ -116,7 +126,7 @@ class PackPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    plugin.removeEnabledPack(name);
+                    plugin.removeEnabledPack(pack.id);
                     plugin.removeGroundMarkers(points);
                     rowContainer.add(addPack, BorderLayout.EAST);
                     rowContainer.remove(removePack);
