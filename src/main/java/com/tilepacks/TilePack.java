@@ -27,12 +27,21 @@ package com.tilepacks;
 class TilePack {
     public Integer id;
     public String packName;
+    public String link;
     public String packTiles;
 
     public TilePack(Integer id, String packName, String packTiles)
     {
         this.id = id;
         this.packName = packName;
+        this.packTiles = packTiles;
+    }
+
+    public TilePack(Integer id, String packName, String link, String packTiles)
+    {
+        this.id = id;
+        this.packName = packName;
+        this.link = link;
         this.packTiles = packTiles;
     }
 }

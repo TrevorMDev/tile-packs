@@ -33,6 +33,7 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.LinkBrowser;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -47,30 +48,36 @@ class PackPanel extends JPanel {
 
     private static final int ROW_WIDTH = PluginPanel.PANEL_WIDTH - 30;
     private static final int ROW_HEIGHT = 30;
+    private static final int RIGHT_PANEL_WIDTH = 40;
 
     private static final ImageIcon ADD_ICON;
     private static final ImageIcon ADD_ICON_HOVER;
     private static final ImageIcon REMOVE_ICON;
     private static final ImageIcon REMOVE_ICON_HOVER;
+    private static final ImageIcon HELP_ICON;
+    private static final ImageIcon HELP_ICON_HOVER;
 
     private final TilePacksPlugin plugin;
     private final Gson gson;
 
     private final JPanel rowContainer = new JPanel();
+    private final JPanel rightPanel = new JPanel();
     private JLabel packName;
     private JLabel addPack;
     private JLabel removePack;
+    private JLabel helpLink;
     private List<GroundMarkerPoint> points;
 
     static {
         final BufferedImage addIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "add_icon.png");
         ADD_ICON = new ImageIcon(addIcon);
-        final BufferedImage addIconHover = ImageUtil.loadImageResource(TilePacksPlugin.class, "add_icon_hover.png");
-        ADD_ICON_HOVER = new ImageIcon(addIconHover);
+        ADD_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(addIcon, 0.53f));
         final BufferedImage removeIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "remove_icon.png");
         REMOVE_ICON = new ImageIcon(removeIcon);
-        final BufferedImage removeIconHover = ImageUtil.loadImageResource(TilePacksPlugin.class, "remove_icon_hover.png");
-        REMOVE_ICON_HOVER = new ImageIcon(removeIconHover);
+        REMOVE_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.50f));
+        final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "help_icon.png");
+        HELP_ICON = new ImageIcon(helpIcon);
+        HELP_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));
     }
 
     PackPanel(TilePacksPlugin plugin, Gson gson, TilePack pack, boolean enabled) {
@@ -94,6 +101,11 @@ class PackPanel extends JPanel {
         packName.setFont(FontManager.getRunescapeFont());
         rowContainer.add(packName, BorderLayout.WEST);
 
+        rightPanel.setLayout(new BorderLayout());
+        rightPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+        rightPanel.setPreferredSize(new Dimension(RIGHT_PANEL_WIDTH, ROW_HEIGHT));
+        rowContainer.add(rightPanel, BorderLayout.EAST);
+
         addPack = new JLabel();
         addPack.setIcon(ADD_ICON);
         addPack.addMouseListener(new MouseAdapter() {
@@ -102,10 +114,11 @@ class PackPanel extends JPanel {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     plugin.addEnabledPack(pack.id);
                     plugin.importGroundMarkers(points);
-                    rowContainer.add(removePack, BorderLayout.EAST);
-                    rowContainer.remove(addPack);
-                    rowContainer.revalidate();
-                    rowContainer.repaint();
+                    removePack.setIcon(REMOVE_ICON_HOVER);
+                    rightPanel.add(removePack, BorderLayout.EAST);
+                    rightPanel.remove(addPack);
+                    rightPanel.revalidate();
+                    rightPanel.repaint();
                 }
             }
 
@@ -128,10 +141,11 @@ class PackPanel extends JPanel {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     plugin.removeEnabledPack(pack.id);
                     plugin.removeGroundMarkers(points);
-                    rowContainer.add(addPack, BorderLayout.EAST);
-                    rowContainer.remove(removePack);
-                    rowContainer.revalidate();
-                    rowContainer.repaint();
+                    addPack.setIcon(ADD_ICON_HOVER);
+                    rightPanel.add(addPack, BorderLayout.EAST);
+                    rightPanel.remove(removePack);
+                    rightPanel.revalidate();
+                    rightPanel.repaint();
                 }
             }
 
@@ -146,10 +160,36 @@ class PackPanel extends JPanel {
             }
         });
 
+        if(pack.link != null && pack.link != "") {
+            helpLink = new JLabel();
+            helpLink.setIcon(HELP_ICON);
+            helpLink.setToolTipText("Click to open source of pack in browser");
+            helpLink.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        LinkBrowser.browse(pack.link);
+                    }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    helpLink.setIcon(HELP_ICON_HOVER);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    helpLink.setIcon(HELP_ICON);
+                }
+            });
+
+            rightPanel.add(helpLink, BorderLayout.WEST);
+        }
+
         if (enabled) {
-            rowContainer.add(removePack, BorderLayout.EAST);
+            rightPanel.add(removePack, BorderLayout.EAST);
         } else {
-            rowContainer.add(addPack, BorderLayout.EAST);
+            rightPanel.add(addPack, BorderLayout.EAST);
         }
     }
 }
