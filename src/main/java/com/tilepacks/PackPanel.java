@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2021, Adam <Adam@sigterm.info>
- * Copyright (c) 2022, Trevor <https://github.com/TrevorMartz>
+ * Copyright (c) 2022, Trevor <https://github.com/TrevorMDev>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
