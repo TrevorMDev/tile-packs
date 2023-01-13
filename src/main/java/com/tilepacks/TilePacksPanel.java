@@ -40,7 +40,7 @@ import java.awt.event.KeyListener;
 import java.util.List;
 import java.util.Map;
 
-import static com.tilepacks.TilePacksPlugin.PACKS;
+import static com.tilepacks.TilePacksPlugin.packs;
 
 @Slf4j
 class TilePacksPanel extends PluginPanel {
@@ -89,7 +89,7 @@ class TilePacksPanel extends PluginPanel {
         listContainer.removeAll();
         String search = searchBar.getText();
         List<Integer> enabledPacks = plugin.loadEnabledPacks();
-        for (Map.Entry<Integer, TilePack> pack : PACKS.entrySet()) {
+        for (Map.Entry<Integer, TilePack> pack : packs.entrySet()) {
             //TODO add search keys to the TilePack so you can search on more than the name.
             if (Strings.isNullOrEmpty(search) || pack.getValue().packName.contains(search.toLowerCase())) {
                 JPanel tile = new PackPanel(plugin, gson, pack.getValue(), enabledPacks.contains(pack.getKey()));
