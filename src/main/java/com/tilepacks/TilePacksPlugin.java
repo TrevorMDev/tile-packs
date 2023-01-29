@@ -27,7 +27,6 @@
 package com.tilepacks;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
@@ -108,13 +107,13 @@ public class TilePacksPlugin extends Plugin {
 
         loadPoints();
 
+        log.debug("Tile Packs Plugin started");
         if (config.hidePlugin()) {
             return;
         }
 
         clientToolbar.addNavigation(navButton);
 
-        log.debug("Tile Packs Plugin started");
     }
 
     @Override
@@ -139,17 +138,12 @@ public class TilePacksPlugin extends Plugin {
         }
     }
 
-    Collection<GroundMarkerPoint> getSavedPoints(int regionId) {
-        String json = configManager.getConfiguration(CONFIG_GROUP, REGION_PREFIX + regionId);
-
-        if (Strings.isNullOrEmpty(json)) {
-            return Collections.emptyList();
-        }
-
-        return gson.fromJson(json, new TypeToken<List<GroundMarkerPoint>>() {
-        }.getType());
+    //this function deletes legacy configs for a region. This plugin used to store all the tiles per region in the config, but now it just grabs them from the packs themselves.
+    void deleteLegacyConfig(int regionId) {
+        configManager.unsetConfiguration(CONFIG_GROUP, REGION_PREFIX + regionId);
     }
 
+    //gets all the active points for all enabled packs.
     List<GroundMarkerPoint> getActivePoints() {
         List<GroundMarkerPoint> markers = new ArrayList<>();
         List<Integer> enabledPacks = loadEnabledPacks();
@@ -164,7 +158,9 @@ public class TilePacksPlugin extends Plugin {
         return markers;
     }
 
+    //gets all the active points, filtered for a region
     List<GroundMarkerPoint> getActivePoints(int regionId) {
+        deleteLegacyConfig(regionId);
         List<GroundMarkerPoint> activePoints = getActivePoints();
         Map<Integer, List<GroundMarkerPoint>> regionGroupedPoints = activePoints.stream()
                 .collect(Collectors.groupingBy(GroundMarkerPoint::getRegionId));
@@ -175,6 +171,7 @@ public class TilePacksPlugin extends Plugin {
         return regionPoints;
     }
 
+    //saves a pack id to the saved config of enabled packs
     void addEnabledPack(Integer packId) {
         List<Integer> packs = loadEnabledPacks();
         packs.add(packId);
@@ -183,6 +180,7 @@ public class TilePacksPlugin extends Plugin {
         configManager.setConfiguration(CONFIG_GROUP, PACKS_PREFIX, json);
     }
 
+    //removes a pack id from the saved config of enabled packs
     void removeEnabledPack(Integer packId) {
         List<Integer> packs = loadEnabledPacks();
         packs.remove(packId);
@@ -195,6 +193,7 @@ public class TilePacksPlugin extends Plugin {
         configManager.setConfiguration(CONFIG_GROUP, PACKS_PREFIX, json);
     }
 
+    //gets a list of all enabled pack ids
     List<Integer> loadEnabledPacks() {
         String json = configManager.getConfiguration(CONFIG_GROUP, PACKS_PREFIX);
 
@@ -206,16 +205,7 @@ public class TilePacksPlugin extends Plugin {
 
     }
 
-    void savePoints(int regionId, Collection<GroundMarkerPoint> points) {
-        if (points == null || points.isEmpty()) {
-            configManager.unsetConfiguration(CONFIG_GROUP, REGION_PREFIX + regionId);
-            return;
-        }
-
-        String json = gson.toJson(points);
-        configManager.setConfiguration(CONFIG_GROUP, REGION_PREFIX + regionId, json);
-    }
-
+    //loads the points from the packs for the players active regions
     void loadPoints() {
         points.clear();
 
@@ -226,12 +216,13 @@ public class TilePacksPlugin extends Plugin {
         }
 
         for (int regionId : regions) {
-            Collection<GroundMarkerPoint> regionPoints = getSavedPoints(regionId);
+            Collection<GroundMarkerPoint> regionPoints = getActivePoints(regionId);
             Collection<ColorTileMarker> colorTileMarkers = translateToColorTileMarker(regionPoints);
             points.addAll(colorTileMarkers);
         }
     }
 
+    //loads the packs from the json file
     void loadPacks() {
         try (InputStream in = getClass().getResourceAsStream("tilePacks.jsonc"))
         {
@@ -261,44 +252,6 @@ public class TilePacksPlugin extends Plugin {
                 .collect(Collectors.toList());
     }
 
-    void importGroundMarkers(List<GroundMarkerPoint> importPoints) {
-        Map<Integer, List<GroundMarkerPoint>> regionGroupedPoints = importPoints.stream()
-                .collect(Collectors.groupingBy(GroundMarkerPoint::getRegionId));
-
-        regionGroupedPoints.forEach((regionId, groupedPoints) ->
-        {
-            Collection<GroundMarkerPoint> regionPoints = getSavedPoints(regionId);
-
-            List<GroundMarkerPoint> mergedList = new ArrayList<>(regionPoints.size() + groupedPoints.size());
-            mergedList.addAll(regionPoints);
-
-            for (GroundMarkerPoint point : groupedPoints) {
-                if (!mergedList.contains(point)) {
-                    mergedList.add(point);
-                }
-            }
-
-            savePoints(regionId, mergedList);
-        });
-
-        loadPoints();
-    }
-
-    void removeGroundMarkers(List<GroundMarkerPoint> removePoints) {
-        Map<Integer, List<GroundMarkerPoint>> regionGroupedPoints = removePoints.stream()
-                .collect(Collectors.groupingBy(GroundMarkerPoint::getRegionId));
-
-
-        regionGroupedPoints.forEach((regionId, groupedPoints) ->
-        {
-            //there is no need to filter out the individual points, we can just re-filter the points it should have and overwrite the save.
-            Collection<GroundMarkerPoint> regionPoints = getActivePoints(regionId);
-            savePoints(regionId, regionPoints);
-        });
-
-        loadPoints();
-    }
-
     @Subscribe
     public void onGameStateChanged(GameStateChanged gameStateChanged) {
         if (gameStateChanged.getGameState() != GameState.LOGGED_IN) {
@@ -308,7 +261,6 @@ public class TilePacksPlugin extends Plugin {
         // map region has just been updated
         loadPoints();
     }
-
 
     @Provides
     TilePacksConfig provideConfig(ConfigManager configManager) {

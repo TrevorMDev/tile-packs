@@ -113,7 +113,7 @@ class PackPanel extends JPanel {
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     plugin.addEnabledPack(pack.id);
-                    plugin.importGroundMarkers(points);
+                    plugin.loadPoints();
                     removePack.setIcon(REMOVE_ICON_HOVER);
                     rightPanel.add(removePack, BorderLayout.EAST);
                     rightPanel.remove(addPack);
@@ -140,7 +140,7 @@ class PackPanel extends JPanel {
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     plugin.removeEnabledPack(pack.id);
-                    plugin.removeGroundMarkers(points);
+                    plugin.loadPoints();
                     addPack.setIcon(ADD_ICON_HOVER);
                     rightPanel.add(addPack, BorderLayout.EAST);
                     rightPanel.remove(removePack);
