@@ -92,6 +92,7 @@ public class TilePacksPlugin extends Plugin {
 
     @Override
     protected void startUp() throws Exception {
+        deleteLegacyConfig();
         loadPacks();
         overlayManager.add(overlay);
         panel = new TilePacksPanel(this, gson);
@@ -138,9 +139,15 @@ public class TilePacksPlugin extends Plugin {
         }
     }
 
-    //this function deletes legacy configs for a region. This plugin used to store all the tiles per region in the config, but now it just grabs them from the packs themselves.
-    void deleteLegacyConfig(int regionId) {
-        configManager.unsetConfiguration(CONFIG_GROUP, REGION_PREFIX + regionId);
+    //this function deletes legacy configs. This plugin used to store all the tiles per region in the config, but now it just grabs them from the packs themselves.
+    void deleteLegacyConfig() {
+        List<String> oldConfigs = configManager.getConfigurationKeys(CONFIG_GROUP + "." + REGION_PREFIX);
+        if(oldConfigs.size() > 0) {
+            for (String config : oldConfigs) {
+                configManager.unsetConfiguration(CONFIG_GROUP, config.split("\\.")[1]);
+            }
+        }
+
     }
 
     //gets all the active points for all enabled packs.
@@ -160,7 +167,6 @@ public class TilePacksPlugin extends Plugin {
 
     //gets all the active points, filtered for a region
     List<GroundMarkerPoint> getActivePoints(int regionId) {
-        deleteLegacyConfig(regionId);
         List<GroundMarkerPoint> activePoints = getActivePoints();
         Map<Integer, List<GroundMarkerPoint>> regionGroupedPoints = activePoints.stream()
                 .collect(Collectors.groupingBy(GroundMarkerPoint::getRegionId));

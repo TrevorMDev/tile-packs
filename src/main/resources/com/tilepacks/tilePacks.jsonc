@@ -2,16 +2,6 @@
 //latest id(add this number + 1 to the list) - 38
 //there are some removed ids, so not all numbers exist.
 {
-  "9999": {
-    "id": 9999,
-    "packName": "Test",
-    "packTiles": "[{\"regionId\":9776,\"regionX\":8,\"regionY\":16,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":8,\"regionY\":18,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":10,\"regionY\":18,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":10,\"regionY\":16,\"z\":0,\"color\":\"#FFF1FF00\"}]"
-  },
-  "9998": {
-    "id": 9998,
-    "packName": "Test 2",
-    "packTiles": "[{\"regionId\":9776,\"regionX\":8,\"regionY\":16,\"z\":0,\"color\":\"#FF330000\"},{\"regionId\":9776,\"regionX\":9,\"regionY\":17,\"z\":0,\"color\":\"#00F1FF00\"},{\"regionId\":9776,\"regionX\":9,\"regionY\":19,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":11,\"regionY\":19,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":9776,\"regionX\":11,\"regionY\":17,\"z\":0,\"color\":\"#FFF1FF00\"}]"
-  },
   "1": {
     "id": 1,
     "packName": "Abyssal Sire",
