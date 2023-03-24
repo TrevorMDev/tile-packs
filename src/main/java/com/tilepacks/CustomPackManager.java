@@ -96,7 +96,7 @@ public class CustomPackManager extends PluginPanel {
             try {
                 importPoints = gson.fromJson(tilesInput.getText(), new TypeToken<List<GroundMarkerPoint>>() {
                 }.getType());
-            } catch (JsonSyntaxException ex) {
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(inputLabel, "Error parsing tiles, check the formatting");
                 return;
             }

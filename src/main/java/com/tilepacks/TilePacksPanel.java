@@ -89,11 +89,9 @@ class TilePacksPanel extends PluginPanel {
     }
 
     void loadPacks() {
-        log.debug("loading packs");
         listContainer.removeAll();
         String search = searchBar.getText();
         List<Integer> enabledPacks = plugin.loadEnabledPacks();
-        log.debug("count: " + enabledPacks.size());
         for (Map.Entry<Integer, TilePack> pack : packs.entrySet()) {
             //TODO add search keys to the TilePack so you can search on more than the name.
             if (Strings.isNullOrEmpty(search) || pack.getValue().packName.toLowerCase().contains(search.toLowerCase())) {
