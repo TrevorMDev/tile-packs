@@ -147,7 +147,6 @@ public class TilePacksPlugin extends Plugin {
                 configManager.unsetConfiguration(CONFIG_GROUP, config.split("\\.")[1]);
             }
         }
-
     }
 
     //gets all the active points for all enabled packs.

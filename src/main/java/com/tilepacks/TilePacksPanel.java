@@ -48,8 +48,8 @@ class TilePacksPanel extends PluginPanel {
     private final TilePacksPlugin plugin;
     private final Gson gson;
 
-    private final JPanel listContainer = new JPanel();
     private final IconTextField searchBar;
+    private final JPanel listContainer = new JPanel();
 
     TilePacksPanel(TilePacksPlugin plugin, Gson gson) {
         super();
@@ -91,7 +91,7 @@ class TilePacksPanel extends PluginPanel {
         List<Integer> enabledPacks = plugin.loadEnabledPacks();
         for (Map.Entry<Integer, TilePack> pack : packs.entrySet()) {
             //TODO add search keys to the TilePack so you can search on more than the name.
-            if (Strings.isNullOrEmpty(search) || pack.getValue().packName.contains(search.toLowerCase())) {
+            if (Strings.isNullOrEmpty(search) || pack.getValue().packName.toLowerCase().contains(search.toLowerCase())) {
                 JPanel tile = new PackPanel(plugin, gson, pack.getValue(), enabledPacks.contains(pack.getKey()));
                 listContainer.add(tile);
             }
