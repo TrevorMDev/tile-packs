@@ -37,6 +37,7 @@ import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -66,6 +67,8 @@ import java.util.stream.Collectors;
 public class TilePacksPlugin extends Plugin {
     private static final String CONFIG_GROUP = "tilePacks";
     private static final String REGION_PREFIX = "region_";
+    private static final String CUSTOM_ID = "customId";
+    private static final String CUSTOM_PACKS = "customPacks";
     private static final String PACKS_PREFIX = "packs";
 
     public static Map<Integer, TilePack> packs = new HashMap<Integer, TilePack>();
@@ -207,7 +210,6 @@ public class TilePacksPlugin extends Plugin {
         }
         return gson.fromJson(json, new TypeToken<List<Integer>>() {
         }.getType());
-
     }
 
     //loads the points from the packs for the players active regions
@@ -234,10 +236,65 @@ public class TilePacksPlugin extends Plugin {
             final InputStreamReader data = new InputStreamReader(in, StandardCharsets.UTF_8);
             final Type type = new TypeToken<Map<Integer, TilePack>>() {}.getType();
             Map<Integer, TilePack> parsed = gson.fromJson(data, type);
+            //merge in any custom packs
+            Map<Integer, TilePack> customPacks = loadCustomPacks();
+            parsed.putAll(customPacks);
+
             packs = parsed;
         } catch(Exception e) {
             log.error("error loading packs from json, this is likely due to a bad json file.", e);
         }
+    }
+
+    //loads the custom packs from the config
+    Map<Integer, TilePack> loadCustomPacks() {
+        String json = configManager.getConfiguration(CONFIG_GROUP, CUSTOM_PACKS);
+
+        if (Strings.isNullOrEmpty(json)) {
+            return new HashMap<Integer, TilePack>();
+        }
+        return gson.fromJson(json, new TypeToken<Map<Integer, TilePack>>() {
+        }.getType());
+    }
+
+    //gets the custom id the user is currently on
+    //each pack the user adds needs a unique index, so we need to manage that
+    Integer loadCustomId() {
+        String json = configManager.getConfiguration(CONFIG_GROUP, CUSTOM_ID);
+
+        if (Strings.isNullOrEmpty(json)) {
+            //default to 9999 because we add 1, and I want it to start at an even 10k.
+            return 9999;
+        }
+        return gson.fromJson(json, new TypeToken<Integer>() {
+        }.getType());
+    }
+
+    //saves a custom pack to the users config
+    void addCustomPack(String name, String tiles) {
+        Integer customId = loadCustomId() + 1;
+        TilePack pack = new TilePack(customId, name, tiles);
+        Map<Integer, TilePack> customPacks = loadCustomPacks();
+        customPacks.put(customId, pack);
+
+        String json = gson.toJson(customPacks);
+        configManager.setConfiguration(CONFIG_GROUP, CUSTOM_PACKS, json);
+        configManager.setConfiguration(CONFIG_GROUP, CUSTOM_ID, customId);
+    }
+
+    //removes a custom pack from the users config
+    void removeCustomPack(Integer packId) {
+        //unsubscribe the pack before removing it.
+        removeEnabledPack(packId);
+        Map<Integer, TilePack> customPacks = loadCustomPacks();
+        customPacks.remove(packId);
+        if (customPacks.isEmpty()) {
+            configManager.unsetConfiguration(CONFIG_GROUP, CUSTOM_PACKS);
+            return;
+        }
+
+        String json = gson.toJson(customPacks);
+        configManager.setConfiguration(CONFIG_GROUP, CUSTOM_PACKS, json);
     }
 
     private Collection<ColorTileMarker> translateToColorTileMarker(Collection<GroundMarkerPoint> points) {

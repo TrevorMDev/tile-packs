@@ -56,9 +56,12 @@ class PackPanel extends JPanel {
     private static final ImageIcon REMOVE_ICON_HOVER;
     private static final ImageIcon HELP_ICON;
     private static final ImageIcon HELP_ICON_HOVER;
+    private static final ImageIcon DELETE_ICON;
+    private static final ImageIcon DELETE_ICON_HOVER;
 
     private final TilePacksPlugin plugin;
     private final Gson gson;
+    private final TilePacksPanel panel;
 
     private final JPanel rowContainer = new JPanel();
     private final JPanel rightPanel = new JPanel();
@@ -66,6 +69,7 @@ class PackPanel extends JPanel {
     private JLabel addPack;
     private JLabel removePack;
     private JLabel helpLink;
+    private JLabel deleteCustomPack;
     private List<GroundMarkerPoint> points;
 
     static {
@@ -78,13 +82,16 @@ class PackPanel extends JPanel {
         final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "help_icon.png");
         HELP_ICON = new ImageIcon(helpIcon);
         HELP_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));
+        final BufferedImage deleteIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "delete_icon.png");
+        DELETE_ICON = new ImageIcon(deleteIcon);
+        DELETE_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(deleteIcon, 0.50f));
     }
 
-    PackPanel(TilePacksPlugin plugin, Gson gson, TilePack pack, boolean enabled) {
+    PackPanel(TilePacksPlugin plugin, Gson gson, TilePacksPanel panel, TilePack pack, boolean enabled) {
         super();
         this.plugin = plugin;
         this.gson = gson;
-
+        this.panel=panel;
 
         this.points =  gson.fromJson(
                         pack.packTiles,
@@ -190,6 +197,44 @@ class PackPanel extends JPanel {
             rightPanel.add(removePack, BorderLayout.EAST);
         } else {
             rightPanel.add(addPack, BorderLayout.EAST);
+        }
+
+        //anything over 10k is a custom pack
+        if(pack.id >= 10000) {
+            deleteCustomPack = new JLabel();
+            deleteCustomPack.setIcon(DELETE_ICON);
+            deleteCustomPack.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        final int result = JOptionPane.showOptionDialog(rowContainer,
+                                "Are you sure you want to delete this pack?",
+                                "Delete Pack?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+                                null, new String[]{"Yes", "No"}, "No");
+
+                        if (result == JOptionPane.YES_OPTION)
+                        {
+                            plugin.removeCustomPack(pack.id);
+                            plugin.loadPacks();
+                            plugin.loadPoints();
+                            panel.loadPacks();
+                            rightPanel.revalidate();
+                            rightPanel.repaint();
+                        }
+                    }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    deleteCustomPack.setIcon(DELETE_ICON_HOVER);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    deleteCustomPack.setIcon(DELETE_ICON);
+                }
+            });
+            rightPanel.add(deleteCustomPack, BorderLayout.WEST);
         }
     }
 }

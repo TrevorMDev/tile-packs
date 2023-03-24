@@ -26,7 +26,6 @@
 package com.tilepacks;
 
 import com.google.common.base.Strings;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
@@ -82,17 +81,23 @@ class TilePacksPanel extends PluginPanel {
         add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1, 0, 0));
 
+        CustomPackManager customPackManager = new CustomPackManager(plugin, gson, this);
+
+        add(customPackManager);
+
         loadPacks();
     }
 
-    private void loadPacks() {
+    void loadPacks() {
+        log.debug("loading packs");
         listContainer.removeAll();
         String search = searchBar.getText();
         List<Integer> enabledPacks = plugin.loadEnabledPacks();
+        log.debug("count: " + enabledPacks.size());
         for (Map.Entry<Integer, TilePack> pack : packs.entrySet()) {
             //TODO add search keys to the TilePack so you can search on more than the name.
             if (Strings.isNullOrEmpty(search) || pack.getValue().packName.toLowerCase().contains(search.toLowerCase())) {
-                JPanel tile = new PackPanel(plugin, gson, pack.getValue(), enabledPacks.contains(pack.getKey()));
+                JPanel tile = new PackPanel(plugin, gson, this, pack.getValue(), enabledPacks.contains(pack.getKey()));
                 listContainer.add(tile);
             }
         }
