@@ -70,9 +70,19 @@ public class GroundMarkerOverlay extends Overlay {
                 continue;
             }
 
-            Color tileColor = point.getColor();
+            Color tileColor;
+            if(config.overrideColorActive()) {
+                tileColor = config.overrideColor();
+            } else {
+                tileColor = point.getColor();
+            }
 
-            drawTile(graphics, worldPoint, tileColor, point.getLabel(), stroke);
+            String label = null;
+            if(config.showLabels()) {
+                label = point.getLabel();
+            }
+
+            drawTile(graphics, worldPoint, tileColor, label, stroke);
         }
 
         return null;

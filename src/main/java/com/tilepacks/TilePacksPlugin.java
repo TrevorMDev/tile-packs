@@ -86,6 +86,8 @@ public class TilePacksPlugin extends Plugin {
     @Inject
     private OverlayManager overlayManager;
     @Inject
+    private GroundMarkerMinimapOverlay minimapOverlay;
+    @Inject
     private GroundMarkerOverlay overlay;
 
     @Getter(AccessLevel.PACKAGE)
@@ -98,6 +100,7 @@ public class TilePacksPlugin extends Plugin {
         deleteLegacyConfig();
         loadPacks();
         overlayManager.add(overlay);
+        overlayManager.add(minimapOverlay);
         panel = new TilePacksPanel(this, gson);
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
 
@@ -123,6 +126,7 @@ public class TilePacksPlugin extends Plugin {
     @Override
     protected void shutDown() throws Exception {
         overlayManager.remove(overlay);
+        overlayManager.remove(minimapOverlay);
         clientToolbar.removeNavigation(navButton);
         log.debug("Tile Packs Plugin stopped");
     }

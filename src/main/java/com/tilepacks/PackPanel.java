@@ -93,6 +93,8 @@ class PackPanel extends JPanel {
         this.gson = gson;
         this.panel=panel;
 
+        log.debug("Loading pack - {}", pack.packName);
+
         this.points =  gson.fromJson(
                         pack.packTiles,
                         new TypeToken<List<GroundMarkerPoint>>() {
