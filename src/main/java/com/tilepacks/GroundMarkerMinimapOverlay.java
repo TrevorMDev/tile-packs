@@ -43,18 +43,21 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
 
+/**
+ * Manages the drawing of the markers on the minimap
+ */
 class GroundMarkerMinimapOverlay extends Overlay
 {
+    private final PointManager pointManager;
     private final Client client;
     private final TilePacksConfig config;
-    private final TilePacksPlugin plugin;
 
     @Inject
-    private GroundMarkerMinimapOverlay(Client client, TilePacksConfig config, TilePacksPlugin plugin)
+    private GroundMarkerMinimapOverlay(PointManager pointManager, Client client, TilePacksConfig config)
     {
+        this.pointManager = pointManager;
         this.client = client;
         this.config = config;
-        this.plugin = plugin;
         setPosition(OverlayPosition.DYNAMIC);
         setPriority(OverlayPriority.LOW);
         setLayer(OverlayLayer.ABOVE_WIDGETS);
@@ -68,8 +71,7 @@ class GroundMarkerMinimapOverlay extends Overlay
             return null;
         }
 
-        final Collection<ColorTileMarker> points = plugin.getPoints();
-        for (final ColorTileMarker point : points)
+        for (final ColorTileMarker point : pointManager.getPoints())
         {
             WorldPoint worldPoint = point.getWorldPoint();
             if (worldPoint.getPlane() != client.getPlane())

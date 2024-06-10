@@ -26,25 +26,17 @@
  */
 package com.tilepacks;
 
-import com.google.common.base.Strings;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
-import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
-import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.plugins.groundmarkers.GroundMarkerPlugin;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
@@ -52,27 +44,12 @@ import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @PluginDescriptor(
         name = "Tile Packs"
 )
-@PluginDependency(GroundMarkerPlugin.class)
 public class TilePacksPlugin extends Plugin {
-    private static final String CONFIG_GROUP = "tilePacks";
-    private static final String REGION_PREFIX = "region_";
-    private static final String CUSTOM_ID = "customId";
-    private static final String CUSTOM_PACKS = "customPacks";
-    private static final String PACKS_PREFIX = "packs";
-
-    public static Map<Integer, TilePack> packs = new HashMap<Integer, TilePack>();
-
     @Inject
     private Client client;
     @Inject
@@ -90,18 +67,19 @@ public class TilePacksPlugin extends Plugin {
     @Inject
     private GroundMarkerOverlay overlay;
 
-    @Getter(AccessLevel.PACKAGE)
-    private final List<ColorTileMarker> points = new ArrayList<>();
+    private TilePackManager tilePackManager;
+    private PointManager pointManager;
     private TilePacksPanel panel;
     private NavigationButton navButton;
 
     @Override
     protected void startUp() throws Exception {
-        deleteLegacyConfig();
-        loadPacks();
+        tilePackManager = new TilePackManager(gson, configManager);
+        tilePackManager.loadPacks();
+        pointManager = new PointManager(tilePackManager, gson, client);
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
-        panel = new TilePacksPanel(this, gson);
+        panel = new TilePacksPanel(tilePackManager, pointManager, gson);
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
 
         navButton = NavigationButton.builder()
@@ -111,8 +89,7 @@ public class TilePacksPlugin extends Plugin {
                 .panel(panel)
                 .build();
 
-
-        loadPoints();
+        pointManager.loadPoints();
 
         log.debug("Tile Packs Plugin started");
         if (config.hidePlugin()) {
@@ -146,178 +123,6 @@ public class TilePacksPlugin extends Plugin {
         }
     }
 
-    //this function deletes legacy configs. This plugin used to store all the tiles per region in the config, but now it just grabs them from the packs themselves.
-    void deleteLegacyConfig() {
-        List<String> oldConfigs = configManager.getConfigurationKeys(CONFIG_GROUP + "." + REGION_PREFIX);
-        if(oldConfigs.size() > 0) {
-            for (String config : oldConfigs) {
-                configManager.unsetConfiguration(CONFIG_GROUP, config.split("\\.")[1]);
-            }
-        }
-    }
-
-    //gets all the active points for all enabled packs.
-    List<GroundMarkerPoint> getActivePoints() {
-        List<GroundMarkerPoint> markers = new ArrayList<>();
-        List<Integer> enabledPacks = loadEnabledPacks();
-        for (Map.Entry<Integer, TilePack> pack : packs.entrySet()) {
-            if (enabledPacks.contains(pack.getKey())) {
-                markers.addAll(gson.fromJson(
-                        pack.getValue().packTiles,
-                        new TypeToken<List<GroundMarkerPoint>>() {
-                        }.getType()));
-            }
-        }
-        return markers;
-    }
-
-    //gets all the active points, filtered for a region
-    List<GroundMarkerPoint> getActivePoints(int regionId) {
-        List<GroundMarkerPoint> activePoints = getActivePoints();
-        Map<Integer, List<GroundMarkerPoint>> regionGroupedPoints = activePoints.stream()
-                .collect(Collectors.groupingBy(GroundMarkerPoint::getRegionId));
-        List<GroundMarkerPoint> regionPoints = regionGroupedPoints.get(regionId);
-        if (regionPoints == null) {
-            return Collections.emptyList();
-        }
-        return regionPoints;
-    }
-
-    //saves a pack id to the saved config of enabled packs
-    void addEnabledPack(Integer packId) {
-        List<Integer> packs = loadEnabledPacks();
-        packs.add(packId);
-
-        String json = gson.toJson(packs);
-        configManager.setConfiguration(CONFIG_GROUP, PACKS_PREFIX, json);
-    }
-
-    //removes a pack id from the saved config of enabled packs
-    void removeEnabledPack(Integer packId) {
-        List<Integer> packs = loadEnabledPacks();
-        packs.remove(packId);
-        if (packs.isEmpty()) {
-            configManager.unsetConfiguration(CONFIG_GROUP, PACKS_PREFIX);
-            return;
-        }
-
-        String json = gson.toJson(packs);
-        configManager.setConfiguration(CONFIG_GROUP, PACKS_PREFIX, json);
-    }
-
-    //gets a list of all enabled pack ids
-    List<Integer> loadEnabledPacks() {
-        String json = configManager.getConfiguration(CONFIG_GROUP, PACKS_PREFIX);
-
-        if (Strings.isNullOrEmpty(json)) {
-            return new ArrayList<>();
-        }
-        return gson.fromJson(json, new TypeToken<List<Integer>>() {
-        }.getType());
-    }
-
-    //loads the points from the packs for the players active regions
-    void loadPoints() {
-        points.clear();
-
-        int[] regions = client.getMapRegions();
-
-        if (regions == null) {
-            return;
-        }
-
-        for (int regionId : regions) {
-            Collection<GroundMarkerPoint> regionPoints = getActivePoints(regionId);
-            Collection<ColorTileMarker> colorTileMarkers = translateToColorTileMarker(regionPoints);
-            points.addAll(colorTileMarkers);
-        }
-    }
-
-    //loads the packs from the json file
-    void loadPacks() {
-        try (InputStream in = getClass().getResourceAsStream("tilePacks.jsonc"))
-        {
-            final InputStreamReader data = new InputStreamReader(in, StandardCharsets.UTF_8);
-            final Type type = new TypeToken<Map<Integer, TilePack>>() {}.getType();
-            Map<Integer, TilePack> parsed = gson.fromJson(data, type);
-            //merge in any custom packs
-            Map<Integer, TilePack> customPacks = loadCustomPacks();
-            parsed.putAll(customPacks);
-
-            packs = parsed;
-        } catch(Exception e) {
-            log.error("error loading packs from json, this is likely due to a bad json file.", e);
-        }
-    }
-
-    //loads the custom packs from the config
-    Map<Integer, TilePack> loadCustomPacks() {
-        String json = configManager.getConfiguration(CONFIG_GROUP, CUSTOM_PACKS);
-
-        if (Strings.isNullOrEmpty(json)) {
-            return new HashMap<Integer, TilePack>();
-        }
-        return gson.fromJson(json, new TypeToken<Map<Integer, TilePack>>() {
-        }.getType());
-    }
-
-    //gets the custom id the user is currently on
-    //each pack the user adds needs a unique index, so we need to manage that
-    Integer loadCustomId() {
-        String json = configManager.getConfiguration(CONFIG_GROUP, CUSTOM_ID);
-
-        if (Strings.isNullOrEmpty(json)) {
-            //default to 9999 because we add 1, and I want it to start at an even 10k.
-            return 9999;
-        }
-        return gson.fromJson(json, new TypeToken<Integer>() {
-        }.getType());
-    }
-
-    //saves a custom pack to the users config
-    void addCustomPack(String name, String tiles) {
-        Integer customId = loadCustomId() + 1;
-        TilePack pack = new TilePack(customId, name, tiles);
-        Map<Integer, TilePack> customPacks = loadCustomPacks();
-        customPacks.put(customId, pack);
-
-        String json = gson.toJson(customPacks);
-        configManager.setConfiguration(CONFIG_GROUP, CUSTOM_PACKS, json);
-        configManager.setConfiguration(CONFIG_GROUP, CUSTOM_ID, customId);
-    }
-
-    //removes a custom pack from the users config
-    void removeCustomPack(Integer packId) {
-        //unsubscribe the pack before removing it.
-        removeEnabledPack(packId);
-        Map<Integer, TilePack> customPacks = loadCustomPacks();
-        customPacks.remove(packId);
-        if (customPacks.isEmpty()) {
-            configManager.unsetConfiguration(CONFIG_GROUP, CUSTOM_PACKS);
-            return;
-        }
-
-        String json = gson.toJson(customPacks);
-        configManager.setConfiguration(CONFIG_GROUP, CUSTOM_PACKS, json);
-    }
-
-    private Collection<ColorTileMarker> translateToColorTileMarker(Collection<GroundMarkerPoint> points) {
-        if (points.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return points.stream()
-                .map(point -> new ColorTileMarker(
-                        WorldPoint.fromRegion(point.getRegionId(), point.getRegionX(), point.getRegionY(), point.getZ()),
-                        point.getColor(), point.getLabel()))
-                .flatMap(colorTile ->
-                {
-                    final Collection<WorldPoint> localWorldPoints = WorldPoint.toLocalInstance(client, colorTile.getWorldPoint());
-                    return localWorldPoints.stream().map(wp -> new ColorTileMarker(wp, colorTile.getColor(), colorTile.getLabel()));
-                })
-                .collect(Collectors.toList());
-    }
-
     @Subscribe
     public void onGameStateChanged(GameStateChanged gameStateChanged) {
         if (gameStateChanged.getGameState() != GameState.LOGGED_IN) {
@@ -325,7 +130,7 @@ public class TilePacksPlugin extends Plugin {
         }
 
         // map region has just been updated
-        loadPoints();
+        pointManager.loadPoints();
     }
 
     @Provides

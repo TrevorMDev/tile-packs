@@ -39,20 +39,20 @@ import java.awt.event.KeyListener;
 import java.util.List;
 import java.util.Map;
 
-import static com.tilepacks.TilePacksPlugin.packs;
-
 @Slf4j
 class TilePacksPanel extends PluginPanel {
 
-    private final TilePacksPlugin plugin;
+    private final TilePackManager tilePackManager;
+    private final PointManager pointManager;
     private final Gson gson;
 
     private final IconTextField searchBar;
     private final JPanel listContainer = new JPanel();
 
-    TilePacksPanel(TilePacksPlugin plugin, Gson gson) {
+    TilePacksPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson) {
         super();
-        this.plugin = plugin;
+        this.tilePackManager = tilePackManager;
+        this.pointManager = pointManager;
         this.gson = gson;
 
         this.searchBar = new IconTextField();
@@ -81,7 +81,7 @@ class TilePacksPanel extends PluginPanel {
         add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1, 0, 0));
 
-        CustomPackManager customPackManager = new CustomPackManager(plugin, gson, this);
+        CustomPackManager customPackManager = new CustomPackManager(tilePackManager, gson, this);
 
         add(customPackManager);
 
@@ -91,11 +91,11 @@ class TilePacksPanel extends PluginPanel {
     void loadPacks() {
         listContainer.removeAll();
         String search = searchBar.getText();
-        List<Integer> enabledPacks = plugin.loadEnabledPacks();
-        for (Map.Entry<Integer, TilePack> pack : packs.entrySet()) {
+        List<Integer> enabledPacks = tilePackManager.loadEnabledPacks();
+        for (Map.Entry<Integer, TilePack> pack : tilePackManager.getPacks().entrySet()) {
             //TODO add search keys to the TilePack so you can search on more than the name.
             if (Strings.isNullOrEmpty(search) || pack.getValue().packName.toLowerCase().contains(search.toLowerCase())) {
-                JPanel tile = new PackPanel(plugin, gson, this, pack.getValue(), enabledPacks.contains(pack.getKey()));
+                JPanel tile = new PackPanel(tilePackManager, pointManager, gson, this, pack.getValue(), enabledPacks.contains(pack.getKey()));
                 listContainer.add(tile);
             }
         }

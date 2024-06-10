@@ -39,18 +39,21 @@ import javax.inject.Inject;
 import java.awt.*;
 import java.util.Collection;
 
+/**
+ * Manages the drawing of the markers on ground
+ */
 public class GroundMarkerOverlay extends Overlay {
     private static final int MAX_DRAW_DISTANCE = 32;
 
+    private final PointManager pointManager;
     private final Client client;
     private final TilePacksConfig config;
-    private final TilePacksPlugin plugin;
 
     @Inject
-    private GroundMarkerOverlay(Client client, TilePacksConfig config, TilePacksPlugin plugin) {
+    private GroundMarkerOverlay(PointManager pointManager, Client client, TilePacksConfig config) {
+        this.pointManager = pointManager;
         this.client = client;
         this.config = config;
-        this.plugin = plugin;
         setPosition(OverlayPosition.DYNAMIC);
         setPriority(OverlayPriority.LOW);
         setLayer(OverlayLayer.ABOVE_SCENE);
@@ -58,13 +61,12 @@ public class GroundMarkerOverlay extends Overlay {
 
     @Override
     public Dimension render(Graphics2D graphics) {
-        final Collection<ColorTileMarker> points = plugin.getPoints();
-        if (points.isEmpty()) {
+        if (pointManager.getPoints().isEmpty()) {
             return null;
         }
 
         Stroke stroke = new BasicStroke((float) config.borderWidth());
-        for (final ColorTileMarker point : points) {
+        for (final ColorTileMarker point : pointManager.getPoints()) {
             WorldPoint worldPoint = point.getWorldPoint();
             if (worldPoint.getPlane() != client.getPlane()) {
                 continue;

@@ -59,7 +59,8 @@ class PackPanel extends JPanel {
     private static final ImageIcon DELETE_ICON;
     private static final ImageIcon DELETE_ICON_HOVER;
 
-    private final TilePacksPlugin plugin;
+    private final TilePackManager tilePackManager;
+    private final PointManager pointManager;
     private final Gson gson;
     private final TilePacksPanel panel;
 
@@ -87,9 +88,10 @@ class PackPanel extends JPanel {
         DELETE_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(deleteIcon, 0.50f));
     }
 
-    PackPanel(TilePacksPlugin plugin, Gson gson, TilePacksPanel panel, TilePack pack, boolean enabled) {
+    PackPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson, TilePacksPanel panel, TilePack pack, boolean enabled) {
         super();
-        this.plugin = plugin;
+        this.tilePackManager = tilePackManager;
+        this.pointManager = pointManager;
         this.gson = gson;
         this.panel=panel;
 
@@ -121,8 +123,8 @@ class PackPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    plugin.addEnabledPack(pack.id);
-                    plugin.loadPoints();
+                    tilePackManager.addEnabledPack(pack.id);
+                    pointManager.loadPoints();
                     removePack.setIcon(REMOVE_ICON_HOVER);
                     rightPanel.add(removePack, BorderLayout.EAST);
                     rightPanel.remove(addPack);
@@ -148,8 +150,8 @@ class PackPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    plugin.removeEnabledPack(pack.id);
-                    plugin.loadPoints();
+                    tilePackManager.removeEnabledPack(pack.id);
+                    pointManager.loadPoints();
                     addPack.setIcon(ADD_ICON_HOVER);
                     rightPanel.add(addPack, BorderLayout.EAST);
                     rightPanel.remove(removePack);
@@ -216,9 +218,9 @@ class PackPanel extends JPanel {
 
                         if (result == JOptionPane.YES_OPTION)
                         {
-                            plugin.removeCustomPack(pack.id);
-                            plugin.loadPacks();
-                            plugin.loadPoints();
+                            tilePackManager.removeCustomPack(pack.id);
+                            tilePackManager.loadPacks();
+                            pointManager.loadPoints();
                             panel.loadPacks();
                             rightPanel.revalidate();
                             rightPanel.repaint();

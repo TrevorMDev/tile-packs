@@ -26,22 +26,19 @@ package com.tilepacks;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.FlatTextField;
-import net.runelite.client.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 @Slf4j
 public class CustomPackManager extends PluginPanel {
 
-    private final TilePacksPlugin plugin;
+    private final TilePackManager tilePackManager;
     private final Gson gson;
     private final TilePacksPanel panel;
 
@@ -51,9 +48,9 @@ public class CustomPackManager extends PluginPanel {
     private final FlatTextField tilesInput;
     private final JButton addPackButton;
 
-    CustomPackManager(TilePacksPlugin plugin, Gson gson, TilePacksPanel panel) {
+    CustomPackManager(TilePackManager tilePackManager, Gson gson, TilePacksPanel panel) {
         super();
-        this.plugin = plugin;
+        this.tilePackManager = tilePackManager;
         this.gson = gson;
         this.panel = panel;
 
@@ -104,8 +101,8 @@ public class CustomPackManager extends PluginPanel {
                 JOptionPane.showMessageDialog(inputLabel, "Error parsing tiles, check the formatting");
                 return;
             }
-            plugin.addCustomPack(nameInput.getText(), tilesInput.getText());
-            plugin.loadPacks();
+            tilePackManager.addCustomPack(nameInput.getText(), tilesInput.getText());
+            tilePackManager.loadPacks();
             panel.loadPacks();
         });
         add(addPackButton);

@@ -24,6 +24,9 @@
  */
 package com.tilepacks;
 
+/**
+ * Represents all the data needed to make a TilePack
+ */
 class TilePack {
     public Integer id;
     public String packName;
