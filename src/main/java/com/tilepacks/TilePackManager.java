@@ -27,6 +27,7 @@ package com.tilepacks;
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.tilepacks.data.TilePack;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +67,7 @@ public class TilePackManager {
     }
 
     //loads the packs from the json file
-    void loadPacks() {
+    public void loadPacks() {
         try (InputStream in = getClass().getResourceAsStream("tilePacks.jsonc"))
         {
             final InputStreamReader data = new InputStreamReader(in, StandardCharsets.UTF_8);
@@ -83,7 +84,7 @@ public class TilePackManager {
     }
 
     //loads the custom packs from the config
-    Map<Integer, TilePack> loadCustomPacks() {
+    private Map<Integer, TilePack> loadCustomPacks() {
         String json = configManager.getConfiguration(CONFIG_GROUP, CUSTOM_PACKS);
 
         if (Strings.isNullOrEmpty(json)) {
@@ -94,7 +95,7 @@ public class TilePackManager {
     }
 
     //saves a pack id to the saved config of enabled packs
-    void addEnabledPack(Integer packId) {
+    public void addEnabledPack(Integer packId) {
         List<Integer> packs = loadEnabledPacks();
         packs.add(packId);
 
@@ -103,7 +104,7 @@ public class TilePackManager {
     }
 
     //removes a pack id from the saved config of enabled packs
-    void removeEnabledPack(Integer packId) {
+    public void removeEnabledPack(Integer packId) {
         List<Integer> packs = loadEnabledPacks();
         packs.remove(packId);
         if (packs.isEmpty()) {
@@ -116,7 +117,7 @@ public class TilePackManager {
     }
 
     //gets a list of all enabled pack ids
-    List<Integer> loadEnabledPacks() {
+    public List<Integer> loadEnabledPacks() {
         String json = configManager.getConfiguration(CONFIG_GROUP, PACKS_PREFIX);
 
         if (Strings.isNullOrEmpty(json)) {
@@ -128,7 +129,7 @@ public class TilePackManager {
 
     //gets the custom id the user is currently on
     //each pack the user adds needs a unique index, so we need to manage that
-    Integer loadCustomId() {
+    public Integer loadCustomId() {
         String json = configManager.getConfiguration(CONFIG_GROUP, CUSTOM_ID);
 
         if (Strings.isNullOrEmpty(json)) {
@@ -140,7 +141,7 @@ public class TilePackManager {
     }
 
     //saves a custom pack to the users config
-    void addCustomPack(String name, String tiles) {
+    public void addCustomPack(String name, String tiles) {
         Integer customId = loadCustomId() + 1;
         TilePack pack = new TilePack(customId, name, tiles);
         Map<Integer, TilePack> customPacks = loadCustomPacks();
@@ -152,7 +153,7 @@ public class TilePackManager {
     }
 
     //removes a custom pack from the users config
-    void removeCustomPack(Integer packId) {
+    public void removeCustomPack(Integer packId) {
         //unsubscribe the pack before removing it.
         removeEnabledPack(packId);
         Map<Integer, TilePack> customPacks = loadCustomPacks();

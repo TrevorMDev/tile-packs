@@ -28,6 +28,9 @@ package com.tilepacks;
 
 import com.google.gson.Gson;
 import com.google.inject.Provides;
+import com.tilepacks.ui.overlay.GroundMarkerMinimapOverlay;
+import com.tilepacks.ui.overlay.GroundMarkerOverlay;
+import com.tilepacks.ui.panel.TilePacksPanel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;

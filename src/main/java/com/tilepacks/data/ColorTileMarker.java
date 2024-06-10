@@ -22,11 +22,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tilepacks;
+package com.tilepacks.data;
 
 import lombok.Value;
 import net.runelite.api.coords.WorldPoint;
-
 import javax.annotation.Nullable;
 import java.awt.*;
 
@@ -35,7 +34,7 @@ import java.awt.*;
  * Note: This is not used for serialization of ground markers; see {@link GroundMarkerPoint}
  */
 @Value
-class ColorTileMarker {
+public class ColorTileMarker {
     private WorldPoint worldPoint;
     @Nullable
     private Color color;

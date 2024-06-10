@@ -24,9 +24,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tilepacks;
+package com.tilepacks.ui.overlay;
 
 import com.google.common.base.Strings;
+import com.tilepacks.PointManager;
+import com.tilepacks.TilePacksConfig;
+import com.tilepacks.data.ColorTileMarker;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
@@ -37,7 +40,6 @@ import net.runelite.client.ui.overlay.*;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.awt.*;
-import java.util.Collection;
 
 /**
  * Manages the drawing of the markers on ground

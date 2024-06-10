@@ -23,10 +23,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks;
+package com.tilepacks.ui.panel;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.tilepacks.PointManager;
+import com.tilepacks.data.TilePack;
+import com.tilepacks.TilePackManager;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
@@ -40,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-class TilePacksPanel extends PluginPanel {
+public class TilePacksPanel extends PluginPanel {
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
@@ -49,7 +52,7 @@ class TilePacksPanel extends PluginPanel {
     private final IconTextField searchBar;
     private final JPanel listContainer = new JPanel();
 
-    TilePacksPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson) {
+    public TilePacksPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
@@ -88,7 +91,7 @@ class TilePacksPanel extends PluginPanel {
         loadPacks();
     }
 
-    void loadPacks() {
+    public void loadPacks() {
         listContainer.removeAll();
         String search = searchBar.getText();
         List<Integer> enabledPacks = tilePackManager.loadEnabledPacks();

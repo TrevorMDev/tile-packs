@@ -24,10 +24,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks;
+package com.tilepacks.ui.panel;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.tilepacks.*;
+import com.tilepacks.data.GroundMarkerPoint;
+import com.tilepacks.data.TilePack;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
@@ -44,7 +47,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 @Slf4j
-class PackPanel extends JPanel {
+public class PackPanel extends JPanel {
 
     private static final int ROW_WIDTH = PluginPanel.PANEL_WIDTH - 10;
     private static final int ROW_HEIGHT = 30;

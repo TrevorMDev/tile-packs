@@ -23,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tilepacks;
+package com.tilepacks.ui.overlay;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -31,8 +31,10 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Stroke;
-import java.util.Collection;
 import javax.inject.Inject;
+import com.tilepacks.PointManager;
+import com.tilepacks.TilePacksConfig;
+import com.tilepacks.data.ColorTileMarker;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
@@ -46,7 +48,7 @@ import net.runelite.client.ui.overlay.OverlayPriority;
 /**
  * Manages the drawing of the markers on the minimap
  */
-class GroundMarkerMinimapOverlay extends Overlay
+public class GroundMarkerMinimapOverlay extends Overlay
 {
     private final PointManager pointManager;
     private final Client client;

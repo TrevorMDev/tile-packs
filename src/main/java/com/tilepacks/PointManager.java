@@ -26,6 +26,9 @@ package com.tilepacks;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.tilepacks.data.ColorTileMarker;
+import com.tilepacks.data.GroundMarkerPoint;
+import com.tilepacks.data.TilePack;
 import lombok.Value;
 import net.runelite.api.Client;
 import net.runelite.api.coords.WorldPoint;
@@ -53,8 +56,25 @@ public class PointManager {
         this.client = client;
     }
 
+    //loads the points from the packs for the players active regions
+    public void loadPoints() {
+        points.clear();
+
+        int[] regions = client.getMapRegions();
+
+        if (regions == null) {
+            return;
+        }
+
+        for (int regionId : regions) {
+            Collection<GroundMarkerPoint> regionPoints = getActivePoints(regionId);
+            Collection<ColorTileMarker> colorTileMarkers = translateToColorTileMarker(regionPoints);
+            points.addAll(colorTileMarkers);
+        }
+    }
+
     //gets all the active points for all enabled packs.
-    List<GroundMarkerPoint> getActivePoints() {
+    private List<GroundMarkerPoint> getActivePoints() {
         List<GroundMarkerPoint> markers = new ArrayList<>();
         List<Integer> enabledPacks = tilePackManager.loadEnabledPacks();
         for (Map.Entry<Integer, TilePack> pack : tilePackManager.getPacks().entrySet()) {
@@ -69,7 +89,7 @@ public class PointManager {
     }
 
     //gets all the active points, filtered for a region
-    List<GroundMarkerPoint> getActivePoints(int regionId) {
+    private List<GroundMarkerPoint> getActivePoints(int regionId) {
         List<GroundMarkerPoint> activePoints = getActivePoints();
         Map<Integer, List<GroundMarkerPoint>> regionGroupedPoints = activePoints.stream()
                 .collect(Collectors.groupingBy(GroundMarkerPoint::getRegionId));
@@ -78,23 +98,6 @@ public class PointManager {
             return Collections.emptyList();
         }
         return regionPoints;
-    }
-
-    //loads the points from the packs for the players active regions
-    void loadPoints() {
-        points.clear();
-
-        int[] regions = client.getMapRegions();
-
-        if (regions == null) {
-            return;
-        }
-
-        for (int regionId : regions) {
-            Collection<GroundMarkerPoint> regionPoints = getActivePoints(regionId);
-            Collection<ColorTileMarker> colorTileMarkers = translateToColorTileMarker(regionPoints);
-            points.addAll(colorTileMarkers);
-        }
     }
 
 

@@ -22,12 +22,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tilepacks;
+package com.tilepacks.data;
 
 /**
  * Represents all the data needed to make a TilePack
  */
-class TilePack {
+public class TilePack {
     public Integer id;
     public String packName;
     public String link;
