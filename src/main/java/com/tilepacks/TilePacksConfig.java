@@ -44,8 +44,7 @@ public interface TilePacksConfig extends Config {
             name = "Override Color",
             description = "If Use Override Color is checked, all tiles will be this color."
     )
-    default Color overrideColor()
-    {
+    default Color overrideColor() {
         return Color.YELLOW;
     }
 
@@ -54,8 +53,7 @@ public interface TilePacksConfig extends Config {
             name = "Draw tiles on minimap",
             description = "Configures whether tile packs tiles should be drawn on minimap"
     )
-    default boolean drawTilesOnMinimmap()
-    {
+    default boolean drawTilesOnMinimmap() {
         return false;
     }
 

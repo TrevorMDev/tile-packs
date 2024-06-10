@@ -57,7 +57,7 @@ public class GroundMarkerOverlay extends Overlay {
         this.client = client;
         this.config = config;
         setPosition(OverlayPosition.DYNAMIC);
-        setPriority(OverlayPriority.LOW);
+        setPriority(PRIORITY_LOW);
         setLayer(OverlayLayer.ABOVE_SCENE);
     }
 
@@ -75,14 +75,14 @@ public class GroundMarkerOverlay extends Overlay {
             }
 
             Color tileColor;
-            if(config.overrideColorActive()) {
+            if (config.overrideColorActive()) {
                 tileColor = config.overrideColor();
             } else {
                 tileColor = point.getColor();
             }
 
             String label = null;
-            if(config.showLabels()) {
+            if (config.showLabels()) {
                 label = point.getLabel();
             }
 

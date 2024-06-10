@@ -68,17 +68,17 @@ public class TilePackManager {
 
     //loads the packs from the json file
     public void loadPacks() {
-        try (InputStream in = getClass().getResourceAsStream("tilePacks.jsonc"))
-        {
+        try (InputStream in = getClass().getResourceAsStream("tilePacks.jsonc")) {
             final InputStreamReader data = new InputStreamReader(in, StandardCharsets.UTF_8);
-            final Type type = new TypeToken<Map<Integer, TilePack>>() {}.getType();
+            final Type type = new TypeToken<Map<Integer, TilePack>>() {
+            }.getType();
             Map<Integer, TilePack> parsed = gson.fromJson(data, type);
             //merge in any custom packs
             Map<Integer, TilePack> customPacks = loadCustomPacks();
             parsed.putAll(customPacks);
 
             packs = parsed;
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error("error loading packs from json, this is likely due to a bad json file.", e);
         }
     }

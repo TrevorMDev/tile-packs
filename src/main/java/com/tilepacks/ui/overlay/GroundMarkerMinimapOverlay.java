@@ -25,13 +25,6 @@
  */
 package com.tilepacks.ui.overlay;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Stroke;
-import javax.inject.Inject;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.ColorTileMarker;
@@ -45,18 +38,19 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
 
+import javax.inject.Inject;
+import java.awt.*;
+
 /**
  * Manages the drawing of the markers on the minimap
  */
-public class GroundMarkerMinimapOverlay extends Overlay
-{
+public class GroundMarkerMinimapOverlay extends Overlay {
     private final PointManager pointManager;
     private final Client client;
     private final TilePacksConfig config;
 
     @Inject
-    private GroundMarkerMinimapOverlay(PointManager pointManager, Client client, TilePacksConfig config)
-    {
+    private GroundMarkerMinimapOverlay(PointManager pointManager, Client client, TilePacksConfig config) {
         this.pointManager = pointManager;
         this.client = client;
         this.config = config;
@@ -66,23 +60,19 @@ public class GroundMarkerMinimapOverlay extends Overlay
     }
 
     @Override
-    public Dimension render(Graphics2D graphics)
-    {
-        if (!config.drawTilesOnMinimmap())
-        {
+    public Dimension render(Graphics2D graphics) {
+        if (!config.drawTilesOnMinimmap()) {
             return null;
         }
 
-        for (final ColorTileMarker point : pointManager.getPoints())
-        {
+        for (final ColorTileMarker point : pointManager.getPoints()) {
             WorldPoint worldPoint = point.getWorldPoint();
-            if (worldPoint.getPlane() != client.getPlane())
-            {
+            if (worldPoint.getPlane() != client.getPlane()) {
                 continue;
             }
 
             Color tileColor;
-            if(config.overrideColorActive()) {
+            if (config.overrideColorActive()) {
                 tileColor = config.overrideColor();
             } else {
                 tileColor = point.getColor();
@@ -94,10 +84,8 @@ public class GroundMarkerMinimapOverlay extends Overlay
         return null;
     }
 
-    private void drawOnMinimap(Graphics2D graphics, WorldPoint point, Color color)
-    {
-        if (!point.isInScene(client))
-        {
+    private void drawOnMinimap(Graphics2D graphics, WorldPoint point, Color color) {
+        if (!point.isInScene(client)) {
             return;
         }
 
@@ -112,8 +100,7 @@ public class GroundMarkerMinimapOverlay extends Overlay
         Point mp3 = Perspective.localToMinimap(client, new LocalPoint(x + Perspective.LOCAL_TILE_SIZE, y + Perspective.LOCAL_TILE_SIZE));
         Point mp4 = Perspective.localToMinimap(client, new LocalPoint(x + Perspective.LOCAL_TILE_SIZE, y));
 
-        if (mp1 == null || mp2 == null || mp3 == null || mp4 == null)
-        {
+        if (mp1 == null || mp2 == null || mp3 == null || mp4 == null) {
             return;
         }
 

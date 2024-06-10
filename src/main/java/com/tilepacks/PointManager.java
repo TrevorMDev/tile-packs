@@ -50,7 +50,7 @@ public class PointManager {
     private final Client client;
 
     @Inject
-    PointManager(TilePackManager tilePackManager, Gson gson, Client client ) {;
+    PointManager(TilePackManager tilePackManager, Gson gson, Client client) {
         this.tilePackManager = tilePackManager;
         this.gson = gson;
         this.client = client;

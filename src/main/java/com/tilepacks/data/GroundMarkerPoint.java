@@ -29,6 +29,7 @@ package com.tilepacks.data;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+
 import javax.annotation.Nullable;
 import java.awt.*;
 

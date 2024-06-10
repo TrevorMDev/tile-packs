@@ -26,6 +26,7 @@ package com.tilepacks.data;
 
 import lombok.Value;
 import net.runelite.api.coords.WorldPoint;
+
 import javax.annotation.Nullable;
 import java.awt.*;
 
