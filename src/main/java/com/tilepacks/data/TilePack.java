@@ -22,23 +22,24 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tilepacks;
+package com.tilepacks.data;
 
-class TilePack {
+/**
+ * Represents all the data needed to make a TilePack
+ */
+public class TilePack {
     public Integer id;
     public String packName;
     public String link;
     public String packTiles;
 
-    public TilePack(Integer id, String packName, String packTiles)
-    {
+    public TilePack(Integer id, String packName, String packTiles) {
         this.id = id;
         this.packName = packName;
         this.packTiles = packTiles;
     }
 
-    public TilePack(Integer id, String packName, String link, String packTiles)
-    {
+    public TilePack(Integer id, String packName, String link, String packTiles) {
         this.id = id;
         this.packName = packName;
         this.link = link;

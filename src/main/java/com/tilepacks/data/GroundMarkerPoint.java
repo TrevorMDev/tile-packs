@@ -25,7 +25,7 @@
  *
  * Source: https://github.com/runelite/runelite/blob/master/runelite-client/src/main/java/net/runelite/client/plugins/groundmarkers/GroundMarkerPoint.java
  */
-package com.tilepacks;
+package com.tilepacks.data;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -38,7 +38,7 @@ import java.awt.*;
  */
 @Value
 @EqualsAndHashCode(exclude = {"color", "label"})
-class GroundMarkerPoint {
+public class GroundMarkerPoint {
     private int regionId;
     private int regionX;
     private int regionY;

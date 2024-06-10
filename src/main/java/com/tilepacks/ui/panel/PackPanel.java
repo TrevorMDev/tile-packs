@@ -24,10 +24,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks;
+package com.tilepacks.ui.panel;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.tilepacks.PointManager;
+import com.tilepacks.TilePackManager;
+import com.tilepacks.TilePacksPlugin;
+import com.tilepacks.data.GroundMarkerPoint;
+import com.tilepacks.data.TilePack;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
@@ -44,7 +49,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 @Slf4j
-class PackPanel extends JPanel {
+public class PackPanel extends JPanel {
 
     private static final int ROW_WIDTH = PluginPanel.PANEL_WIDTH - 10;
     private static final int ROW_HEIGHT = 30;
@@ -59,46 +64,48 @@ class PackPanel extends JPanel {
     private static final ImageIcon DELETE_ICON;
     private static final ImageIcon DELETE_ICON_HOVER;
 
-    private final TilePacksPlugin plugin;
+    private final TilePackManager tilePackManager;
+    private final PointManager pointManager;
     private final Gson gson;
     private final TilePacksPanel panel;
 
     private final JPanel rowContainer = new JPanel();
     private final JPanel rightPanel = new JPanel();
-    private JLabel packName;
-    private JLabel addPack;
-    private JLabel removePack;
+    private final JLabel packName;
+    private final JLabel addPack;
+    private final JLabel removePack;
     private JLabel helpLink;
     private JLabel deleteCustomPack;
-    private List<GroundMarkerPoint> points;
+    private final List<GroundMarkerPoint> points;
 
     static {
         final BufferedImage addIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "add_icon.png");
         ADD_ICON = new ImageIcon(addIcon);
-        ADD_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(addIcon, 0.53f));
+        ADD_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(addIcon, 0.53f));
         final BufferedImage removeIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "remove_icon.png");
         REMOVE_ICON = new ImageIcon(removeIcon);
-        REMOVE_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.50f));
+        REMOVE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.50f));
         final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "help_icon.png");
         HELP_ICON = new ImageIcon(helpIcon);
-        HELP_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));
+        HELP_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));
         final BufferedImage deleteIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "delete_icon.png");
         DELETE_ICON = new ImageIcon(deleteIcon);
-        DELETE_ICON_HOVER =  new ImageIcon(ImageUtil.alphaOffset(deleteIcon, 0.50f));
+        DELETE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(deleteIcon, 0.50f));
     }
 
-    PackPanel(TilePacksPlugin plugin, Gson gson, TilePacksPanel panel, TilePack pack, boolean enabled) {
+    PackPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson, TilePacksPanel panel, TilePack pack, boolean enabled) {
         super();
-        this.plugin = plugin;
+        this.tilePackManager = tilePackManager;
+        this.pointManager = pointManager;
         this.gson = gson;
-        this.panel=panel;
+        this.panel = panel;
 
         log.debug("Loading pack - {}", pack.packName);
 
-        this.points =  gson.fromJson(
-                        pack.packTiles,
-                        new TypeToken<List<GroundMarkerPoint>>() {
-                        }.getType());
+        this.points = gson.fromJson(
+                pack.packTiles,
+                new TypeToken<List<GroundMarkerPoint>>() {
+                }.getType());
 
         rowContainer.setLayout(new BorderLayout());
         rowContainer.setBackground(ColorScheme.DARKER_GRAY_COLOR);
@@ -121,8 +128,8 @@ class PackPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    plugin.addEnabledPack(pack.id);
-                    plugin.loadPoints();
+                    tilePackManager.addEnabledPack(pack.id);
+                    pointManager.loadPoints();
                     removePack.setIcon(REMOVE_ICON_HOVER);
                     rightPanel.add(removePack, BorderLayout.EAST);
                     rightPanel.remove(addPack);
@@ -148,8 +155,8 @@ class PackPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    plugin.removeEnabledPack(pack.id);
-                    plugin.loadPoints();
+                    tilePackManager.removeEnabledPack(pack.id);
+                    pointManager.loadPoints();
                     addPack.setIcon(ADD_ICON_HOVER);
                     rightPanel.add(addPack, BorderLayout.EAST);
                     rightPanel.remove(removePack);
@@ -169,7 +176,7 @@ class PackPanel extends JPanel {
             }
         });
 
-        if(pack.link != null && pack.link != "") {
+        if (pack.link != null && pack.link != "") {
             helpLink = new JLabel();
             helpLink.setIcon(HELP_ICON);
             helpLink.setToolTipText("Click to open source of pack in browser");
@@ -202,7 +209,7 @@ class PackPanel extends JPanel {
         }
 
         //anything over 10k is a custom pack
-        if(pack.id >= 10000) {
+        if (pack.id >= 10000) {
             deleteCustomPack = new JLabel();
             deleteCustomPack.setIcon(DELETE_ICON);
             deleteCustomPack.addMouseListener(new MouseAdapter() {
@@ -214,11 +221,10 @@ class PackPanel extends JPanel {
                                 "Delete Pack?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
                                 null, new String[]{"Yes", "No"}, "No");
 
-                        if (result == JOptionPane.YES_OPTION)
-                        {
-                            plugin.removeCustomPack(pack.id);
-                            plugin.loadPacks();
-                            plugin.loadPoints();
+                        if (result == JOptionPane.YES_OPTION) {
+                            tilePackManager.removeCustomPack(pack.id);
+                            tilePackManager.loadPacks();
+                            pointManager.loadPoints();
                             panel.loadPacks();
                             rightPanel.revalidate();
                             rightPanel.repaint();
