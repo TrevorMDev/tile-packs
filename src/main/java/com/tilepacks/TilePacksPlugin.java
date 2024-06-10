@@ -65,11 +65,9 @@ public class TilePacksPlugin extends Plugin {
     private ClientToolbar clientToolbar;
     @Inject
     private OverlayManager overlayManager;
-    @Inject
-    private GroundMarkerMinimapOverlay minimapOverlay;
-    @Inject
-    private GroundMarkerOverlay overlay;
 
+    private GroundMarkerMinimapOverlay minimapOverlay;
+    private GroundMarkerOverlay overlay;
     private TilePackManager tilePackManager;
     private PointManager pointManager;
     private TilePacksPanel panel;
@@ -80,6 +78,8 @@ public class TilePacksPlugin extends Plugin {
         tilePackManager = new TilePackManager(gson, configManager);
         tilePackManager.loadPacks();
         pointManager = new PointManager(tilePackManager, gson, client);
+        overlay = new GroundMarkerOverlay(pointManager, client, config);
+        minimapOverlay = new GroundMarkerMinimapOverlay(pointManager, client, config);
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
         panel = new TilePacksPanel(tilePackManager, pointManager, gson);

@@ -30,6 +30,7 @@ import com.tilepacks.data.ColorTileMarker;
 import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.data.TilePack;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.coords.WorldPoint;
 
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 /**
  * This class is responsible for translating the tile packs into drawable points
  */
+@Slf4j
 @Value
 public class PointManager {
 
@@ -71,6 +73,7 @@ public class PointManager {
             Collection<ColorTileMarker> colorTileMarkers = translateToColorTileMarker(regionPoints);
             points.addAll(colorTileMarkers);
         }
+        log.debug("active points - {}",points);
     }
 
     //gets all the active points for all enabled packs.

@@ -30,6 +30,7 @@ import com.google.common.base.Strings;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.ColorTileMarker;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
@@ -52,12 +53,12 @@ public class GroundMarkerOverlay extends Overlay {
     private final TilePacksConfig config;
 
     @Inject
-    private GroundMarkerOverlay(PointManager pointManager, Client client, TilePacksConfig config) {
+    public GroundMarkerOverlay(PointManager pointManager, Client client, TilePacksConfig config) {
         this.pointManager = pointManager;
         this.client = client;
         this.config = config;
         setPosition(OverlayPosition.DYNAMIC);
-        setPriority(PRIORITY_LOW);
+        setPriority(OverlayPriority.LOW);
         setLayer(OverlayLayer.ABOVE_SCENE);
     }
 

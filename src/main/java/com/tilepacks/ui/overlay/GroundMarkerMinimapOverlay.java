@@ -50,7 +50,7 @@ public class GroundMarkerMinimapOverlay extends Overlay {
     private final TilePacksConfig config;
 
     @Inject
-    private GroundMarkerMinimapOverlay(PointManager pointManager, Client client, TilePacksConfig config) {
+    public GroundMarkerMinimapOverlay(PointManager pointManager, Client client, TilePacksConfig config) {
         this.pointManager = pointManager;
         this.client = client;
         this.config = config;

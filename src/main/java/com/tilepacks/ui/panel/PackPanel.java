@@ -76,7 +76,6 @@ public class PackPanel extends JPanel {
     private final JLabel removePack;
     private JLabel helpLink;
     private JLabel deleteCustomPack;
-    private final List<GroundMarkerPoint> points;
 
     static {
         final BufferedImage addIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "add_icon.png");
@@ -101,11 +100,6 @@ public class PackPanel extends JPanel {
         this.panel = panel;
 
         log.debug("Loading pack - {}", pack.packName);
-
-        this.points = gson.fromJson(
-                pack.packTiles,
-                new TypeToken<List<GroundMarkerPoint>>() {
-                }.getType());
 
         rowContainer.setLayout(new BorderLayout());
         rowContainer.setBackground(ColorScheme.DARKER_GRAY_COLOR);
