@@ -30,6 +30,7 @@ import lombok.Value;
 import net.runelite.api.Client;
 import net.runelite.api.coords.WorldPoint;
 
+import javax.inject.Inject;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,7 @@ public class PointManager {
     private final Gson gson;
     private final Client client;
 
+    @Inject
     PointManager(TilePackManager tilePackManager, Gson gson, Client client ) {;
         this.tilePackManager = tilePackManager;
         this.gson = gson;

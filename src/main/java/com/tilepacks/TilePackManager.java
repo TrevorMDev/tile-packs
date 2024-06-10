@@ -32,6 +32,7 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.config.ConfigManager;
 
+import javax.inject.Inject;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
@@ -58,6 +59,7 @@ public class TilePackManager {
     private final Gson gson;
     private final ConfigManager configManager;
 
+    @Inject
     TilePackManager(Gson gson, ConfigManager configManager) {
         this.gson = gson;
         this.configManager = configManager;
