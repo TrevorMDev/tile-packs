@@ -26,12 +26,10 @@
 
 package com.tilepacks.ui.panel;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.TilePacksPlugin;
-import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.data.TilePack;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
@@ -46,10 +44,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.List;
 
 @Slf4j
-public class PackPanel extends JPanel {
+public class TilePackPanel extends JPanel {
 
     private static final int ROW_WIDTH = PluginPanel.PANEL_WIDTH - 10;
     private static final int ROW_HEIGHT = 30;
@@ -67,10 +64,11 @@ public class PackPanel extends JPanel {
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
     private final Gson gson;
-    private final TilePacksPanel panel;
+    private final TilePacksListPanel panel;
 
-    private final JPanel rowContainer = new JPanel();
-    private final JPanel rightPanel = new JPanel();
+    private final JPanel topRow = new JPanel();
+    private final JPanel bottomRow = new JPanel();
+    private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
     private final JLabel addPack;
     private final JLabel removePack;
@@ -92,7 +90,7 @@ public class PackPanel extends JPanel {
         DELETE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(deleteIcon, 0.50f));
     }
 
-    PackPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson, TilePacksPanel panel, TilePack pack, boolean enabled) {
+    TilePackPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson, TilePacksListPanel panel, TilePack pack, boolean enabled) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
@@ -101,20 +99,30 @@ public class PackPanel extends JPanel {
 
         log.debug("Loading pack - {}", pack.packName);
 
-        rowContainer.setLayout(new BorderLayout());
-        rowContainer.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        rowContainer.setPreferredSize(new Dimension(ROW_WIDTH, ROW_HEIGHT));
-        rowContainer.setBorder(new EmptyBorder(8, 8, 6, 8));
-        add(rowContainer);
+        this.setLayout(new BorderLayout());
+        this.setBackground(ColorScheme.BRAND_ORANGE);
+        this.setBorder(new EmptyBorder(2, 2, 2, 2));
+
+        topRow.setLayout(new BorderLayout());
+        topRow.setBackground(ColorScheme.MEDIUM_GRAY_COLOR);
+        topRow.setPreferredSize(new Dimension(ROW_WIDTH, ROW_HEIGHT));
+        topRow.setBorder(new EmptyBorder(4, 4, 4, 4));
+        add(topRow, BorderLayout.NORTH);
+
+        bottomRow.setLayout(new BorderLayout());
+        bottomRow.setBackground(ColorScheme.DARK_GRAY_COLOR);
+        bottomRow.setPreferredSize(new Dimension(ROW_WIDTH, ROW_HEIGHT));
+        bottomRow.setBorder(new EmptyBorder(2, 4, 2, 4));
+        add(bottomRow, BorderLayout.SOUTH);
 
         packName = new JLabel(pack.packName);
         packName.setFont(FontManager.getRunescapeFont());
-        rowContainer.add(packName, BorderLayout.WEST);
+        topRow.add(packName, BorderLayout.WEST);
 
-        rightPanel.setLayout(new BorderLayout());
-        rightPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        rightPanel.setPreferredSize(new Dimension(RIGHT_PANEL_WIDTH, ROW_HEIGHT));
-        rowContainer.add(rightPanel, BorderLayout.EAST);
+        controlPanel.setLayout(new BorderLayout());
+        controlPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+        controlPanel.setPreferredSize(new Dimension(RIGHT_PANEL_WIDTH, ROW_HEIGHT));
+        bottomRow.add(controlPanel, BorderLayout.EAST);
 
         addPack = new JLabel();
         addPack.setIcon(ADD_ICON);
@@ -125,10 +133,10 @@ public class PackPanel extends JPanel {
                     tilePackManager.addEnabledPack(pack.id);
                     pointManager.loadPoints();
                     removePack.setIcon(REMOVE_ICON_HOVER);
-                    rightPanel.add(removePack, BorderLayout.EAST);
-                    rightPanel.remove(addPack);
-                    rightPanel.revalidate();
-                    rightPanel.repaint();
+                    controlPanel.add(removePack, BorderLayout.EAST);
+                    controlPanel.remove(addPack);
+                    controlPanel.revalidate();
+                    controlPanel.repaint();
                 }
             }
 
@@ -152,10 +160,10 @@ public class PackPanel extends JPanel {
                     tilePackManager.removeEnabledPack(pack.id);
                     pointManager.loadPoints();
                     addPack.setIcon(ADD_ICON_HOVER);
-                    rightPanel.add(addPack, BorderLayout.EAST);
-                    rightPanel.remove(removePack);
-                    rightPanel.revalidate();
-                    rightPanel.repaint();
+                    controlPanel.add(addPack, BorderLayout.EAST);
+                    controlPanel.remove(removePack);
+                    controlPanel.revalidate();
+                    controlPanel.repaint();
                 }
             }
 
@@ -193,13 +201,13 @@ public class PackPanel extends JPanel {
                 }
             });
 
-            rightPanel.add(helpLink, BorderLayout.WEST);
+            controlPanel.add(helpLink, BorderLayout.WEST);
         }
 
         if (enabled) {
-            rightPanel.add(removePack, BorderLayout.EAST);
+            controlPanel.add(removePack, BorderLayout.EAST);
         } else {
-            rightPanel.add(addPack, BorderLayout.EAST);
+            controlPanel.add(addPack, BorderLayout.EAST);
         }
 
         //anything over 10k is a custom pack
@@ -210,7 +218,7 @@ public class PackPanel extends JPanel {
                 @Override
                 public void mousePressed(MouseEvent e) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
-                        final int result = JOptionPane.showOptionDialog(rowContainer,
+                        final int result = JOptionPane.showOptionDialog(topRow,
                                 "Are you sure you want to delete this pack?",
                                 "Delete Pack?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
                                 null, new String[]{"Yes", "No"}, "No");
@@ -220,8 +228,8 @@ public class PackPanel extends JPanel {
                             tilePackManager.loadPacks();
                             pointManager.loadPoints();
                             panel.loadPacks();
-                            rightPanel.revalidate();
-                            rightPanel.repaint();
+                            controlPanel.revalidate();
+                            controlPanel.repaint();
                         }
                     }
                 }
@@ -236,7 +244,7 @@ public class PackPanel extends JPanel {
                     deleteCustomPack.setIcon(DELETE_ICON);
                 }
             });
-            rightPanel.add(deleteCustomPack, BorderLayout.WEST);
+            controlPanel.add(deleteCustomPack, BorderLayout.WEST);
         }
     }
 }

@@ -38,11 +38,11 @@ import java.awt.*;
 import java.util.List;
 
 @Slf4j
-public class CustomPackManager extends PluginPanel {
+public class CustomPackManagerPanel extends PluginPanel {
 
     private final TilePackManager tilePackManager;
     private final Gson gson;
-    private final TilePacksPanel panel;
+    private final TilePacksListPanel panel;
 
     private final JLabel inputLabel;
     private final FlatTextField nameInput;
@@ -50,7 +50,7 @@ public class CustomPackManager extends PluginPanel {
     private final FlatTextField tilesInput;
     private final JButton addPackButton;
 
-    CustomPackManager(TilePackManager tilePackManager, Gson gson, TilePacksPanel panel) {
+    CustomPackManagerPanel(TilePackManager tilePackManager, Gson gson, TilePacksListPanel panel) {
         super();
         this.tilePackManager = tilePackManager;
         this.gson = gson;

@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-public class TilePacksPanel extends PluginPanel {
+public class TilePacksListPanel extends PluginPanel {
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
@@ -52,7 +52,7 @@ public class TilePacksPanel extends PluginPanel {
     private final IconTextField searchBar;
     private final JPanel listContainer = new JPanel();
 
-    public TilePacksPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson) {
+    public TilePacksListPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
@@ -84,7 +84,7 @@ public class TilePacksPanel extends PluginPanel {
         add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1, 0, 0));
 
-        CustomPackManager customPackManager = new CustomPackManager(tilePackManager, gson, this);
+        CustomPackManagerPanel customPackManager = new CustomPackManagerPanel(tilePackManager, gson, this);
 
         add(customPackManager);
 
@@ -98,7 +98,7 @@ public class TilePacksPanel extends PluginPanel {
         for (Map.Entry<Integer, TilePack> pack : tilePackManager.getPacks().entrySet()) {
             //TODO add search keys to the TilePack so you can search on more than the name.
             if (Strings.isNullOrEmpty(search) || pack.getValue().packName.toLowerCase().contains(search.toLowerCase())) {
-                JPanel tile = new PackPanel(tilePackManager, pointManager, gson, this, pack.getValue(), enabledPacks.contains(pack.getKey()));
+                JPanel tile = new TilePackPanel(tilePackManager, pointManager, gson, this, pack.getValue(), enabledPacks.contains(pack.getKey()));
                 listContainer.add(tile);
             }
         }
