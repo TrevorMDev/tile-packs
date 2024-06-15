@@ -28,7 +28,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.GroundMarkerPoint;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.FlatTextField;
@@ -37,12 +36,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
-@Slf4j
+/**
+ * UI that handles the addition of new tile packs
+ */
 public class CustomPackManagerPanel extends PluginPanel {
 
     private final TilePackManager tilePackManager;
     private final Gson gson;
-    private final TilePacksListPanel panel;
+    private final TilePacksListPanel tilePacksList;
 
     private final JLabel inputLabel;
     private final FlatTextField nameInput;
@@ -50,11 +51,11 @@ public class CustomPackManagerPanel extends PluginPanel {
     private final FlatTextField tilesInput;
     private final JButton addPackButton;
 
-    CustomPackManagerPanel(TilePackManager tilePackManager, Gson gson, TilePacksListPanel panel) {
+    CustomPackManagerPanel(TilePackManager tilePackManager, Gson gson, TilePacksListPanel tilePacksList) {
         super();
         this.tilePackManager = tilePackManager;
         this.gson = gson;
-        this.panel = panel;
+        this.tilePacksList = tilePacksList;
 
         this.inputLabel = new JLabel("Custom Pack Name");
         add(inputLabel);
@@ -104,8 +105,7 @@ public class CustomPackManagerPanel extends PluginPanel {
                 return;
             }
             tilePackManager.addCustomPack(nameInput.getText(), tilesInput.getText());
-            tilePackManager.loadPacks();
-            panel.loadPacks();
+            tilePacksList.createTilePackPanels();
         });
         add(addPackButton);
     }

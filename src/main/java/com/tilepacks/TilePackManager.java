@@ -55,7 +55,9 @@ public class TilePackManager {
     private static final String PACKS_PREFIX = "packs";
 
     @NonFinal
-    private Map<Integer, TilePack> packs = new HashMap<Integer, TilePack>();
+    private Map<Integer, TilePack> tilePacks = new HashMap<Integer, TilePack>();
+    @NonFinal
+    private List<Integer> enabledPacks = new ArrayList<Integer>();
 
     private final Gson gson;
     private final ConfigManager configManager;
@@ -64,10 +66,13 @@ public class TilePackManager {
     TilePackManager(Gson gson, ConfigManager configManager) {
         this.gson = gson;
         this.configManager = configManager;
+
+        this.loadEnabledPacks();
+        this.loadPacks();
     }
 
     //loads the packs from the json file
-    public void loadPacks() {
+    private void loadPacks() {
         try (InputStream in = getClass().getResourceAsStream("tilePacks.jsonc")) {
             final InputStreamReader data = new InputStreamReader(in, StandardCharsets.UTF_8);
             final Type type = new TypeToken<Map<Integer, TilePack>>() {
@@ -77,7 +82,7 @@ public class TilePackManager {
             Map<Integer, TilePack> customPacks = loadCustomPacks();
             parsed.putAll(customPacks);
 
-            packs = parsed;
+            tilePacks = parsed;
         } catch (Exception e) {
             log.error("error loading packs from json, this is likely due to a bad json file.", e);
         }
@@ -96,34 +101,33 @@ public class TilePackManager {
 
     //saves a pack id to the saved config of enabled packs
     public void addEnabledPack(Integer packId) {
-        List<Integer> packs = loadEnabledPacks();
-        packs.add(packId);
+        enabledPacks.add(packId);
 
-        String json = gson.toJson(packs);
+        String json = gson.toJson(enabledPacks);
         configManager.setConfiguration(CONFIG_GROUP, PACKS_PREFIX, json);
     }
 
     //removes a pack id from the saved config of enabled packs
     public void removeEnabledPack(Integer packId) {
-        List<Integer> packs = loadEnabledPacks();
-        packs.remove(packId);
-        if (packs.isEmpty()) {
+        enabledPacks.remove(packId);
+        if (enabledPacks.isEmpty()) {
             configManager.unsetConfiguration(CONFIG_GROUP, PACKS_PREFIX);
             return;
         }
 
-        String json = gson.toJson(packs);
+        String json = gson.toJson(enabledPacks);
         configManager.setConfiguration(CONFIG_GROUP, PACKS_PREFIX, json);
     }
 
     //gets a list of all enabled pack ids
-    public List<Integer> loadEnabledPacks() {
+    private void loadEnabledPacks() {
         String json = configManager.getConfiguration(CONFIG_GROUP, PACKS_PREFIX);
 
+        log.debug("json {}", json);
         if (Strings.isNullOrEmpty(json)) {
-            return new ArrayList<>();
+            return;
         }
-        return gson.fromJson(json, new TypeToken<List<Integer>>() {
+        enabledPacks = gson.fromJson(json, new TypeToken<List<Integer>>() {
         }.getType());
     }
 
@@ -150,6 +154,9 @@ public class TilePackManager {
         String json = gson.toJson(customPacks);
         configManager.setConfiguration(CONFIG_GROUP, CUSTOM_PACKS, json);
         configManager.setConfiguration(CONFIG_GROUP, CUSTOM_ID, customId);
+
+        enabledPacks.add(pack.id);
+        tilePacks.put(pack.id, pack);
     }
 
     //removes a custom pack from the users config
@@ -165,5 +172,11 @@ public class TilePackManager {
 
         String json = gson.toJson(customPacks);
         configManager.setConfiguration(CONFIG_GROUP, CUSTOM_PACKS, json);
+
+        tilePacks.remove(packId);
+    }
+
+    public boolean isPackEnabled(Integer packId) {
+        return enabledPacks.contains(packId);
     }
 }

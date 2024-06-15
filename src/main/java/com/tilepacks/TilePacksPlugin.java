@@ -76,7 +76,6 @@ public class TilePacksPlugin extends Plugin {
     @Override
     protected void startUp() throws Exception {
         tilePackManager = new TilePackManager(gson, configManager);
-        tilePackManager.loadPacks();
         pointManager = new PointManager(tilePackManager, gson, client);
         overlay = new GroundMarkerOverlay(pointManager, client, config);
         minimapOverlay = new GroundMarkerMinimapOverlay(pointManager, client, config);

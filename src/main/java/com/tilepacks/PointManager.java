@@ -79,8 +79,8 @@ public class PointManager {
     //gets all the active points for all enabled packs.
     private List<GroundMarkerPoint> getActivePoints() {
         List<GroundMarkerPoint> markers = new ArrayList<>();
-        List<Integer> enabledPacks = tilePackManager.loadEnabledPacks();
-        for (Map.Entry<Integer, TilePack> pack : tilePackManager.getPacks().entrySet()) {
+        List<Integer> enabledPacks = tilePackManager.getEnabledPacks();
+        for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet()) {
             if (enabledPacks.contains(pack.getKey())) {
                 markers.addAll(gson.fromJson(
                         pack.getValue().packTiles,

@@ -26,6 +26,7 @@
 
 package com.tilepacks.ui.panel;
 
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
@@ -33,6 +34,7 @@ import com.tilepacks.TilePacksPlugin;
 import com.tilepacks.data.TilePack;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
+import net.runelite.client.ui.DynamicGridLayout;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.ImageUtil;
@@ -46,58 +48,45 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 @Slf4j
+/**
+ * UI container for the TilePack and its controls
+ * One exists for each TilePack
+ */
 public class TilePackPanel extends JPanel {
-
     private static final int ROW_WIDTH = PluginPanel.PANEL_WIDTH - 10;
     private static final int ROW_HEIGHT = 30;
-    private static final int RIGHT_PANEL_WIDTH = 40;
-
-    private static final ImageIcon ADD_ICON;
-    private static final ImageIcon ADD_ICON_HOVER;
-    private static final ImageIcon REMOVE_ICON;
-    private static final ImageIcon REMOVE_ICON_HOVER;
-    private static final ImageIcon HELP_ICON;
-    private static final ImageIcon HELP_ICON_HOVER;
-    private static final ImageIcon DELETE_ICON;
-    private static final ImageIcon DELETE_ICON_HOVER;
+    private static final int CONTROL_SIZE = 20;
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
     private final Gson gson;
-    private final TilePacksListPanel panel;
+    private final TilePacksListPanel tilePacksList;
 
     private final JPanel topRow = new JPanel();
-    private final JPanel bottomRow = new JPanel();
     private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
-    private final JLabel addPack;
-    private final JLabel removePack;
-    private JLabel helpLink;
-    private JLabel deleteCustomPack;
+    // These placeholder labels give us a grid of 10 control icons
+    // Without a fixed number of icons, the controls resize and move around.
+    // Because built in and custom packs have different options
+    private final JLabel placeholder1;
+    private final JLabel placeholder2;
+    private final JLabel placeholder3;
+    private final JLabel placeholder4;
+    private final JLabel placeholder5;
+    private final JLabel placeholder6;
+    private final JLabel placeholder7;
+    private final JLabel deleteCustomPack;
+    private final JLabel helpLink;
+    private final JLabel togglePack;
 
-    static {
-        final BufferedImage addIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "add_icon.png");
-        ADD_ICON = new ImageIcon(addIcon);
-        ADD_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(addIcon, 0.53f));
-        final BufferedImage removeIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "remove_icon.png");
-        REMOVE_ICON = new ImageIcon(removeIcon);
-        REMOVE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.50f));
-        final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "help_icon.png");
-        HELP_ICON = new ImageIcon(helpIcon);
-        HELP_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));
-        final BufferedImage deleteIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "delete_icon.png");
-        DELETE_ICON = new ImageIcon(deleteIcon);
-        DELETE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(deleteIcon, 0.50f));
-    }
-
-    TilePackPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson, TilePacksListPanel panel, TilePack pack, boolean enabled) {
+    TilePackPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson, TilePacksListPanel tilePacksList, TilePack tilePack) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
         this.gson = gson;
-        this.panel = panel;
+        this.tilePacksList = tilePacksList;
 
-        log.debug("Loading pack - {}", pack.packName);
+        log.debug("Loading pack - {}", tilePack.packName);
 
         this.setLayout(new BorderLayout());
         this.setBackground(ColorScheme.BRAND_ORANGE);
@@ -109,142 +98,47 @@ public class TilePackPanel extends JPanel {
         topRow.setBorder(new EmptyBorder(4, 4, 4, 4));
         add(topRow, BorderLayout.NORTH);
 
-        bottomRow.setLayout(new BorderLayout());
-        bottomRow.setBackground(ColorScheme.DARK_GRAY_COLOR);
-        bottomRow.setPreferredSize(new Dimension(ROW_WIDTH, ROW_HEIGHT));
-        bottomRow.setBorder(new EmptyBorder(2, 4, 2, 4));
-        add(bottomRow, BorderLayout.SOUTH);
-
-        packName = new JLabel(pack.packName);
+        packName = new JLabel(tilePack.packName);
         packName.setFont(FontManager.getRunescapeFont());
         topRow.add(packName, BorderLayout.WEST);
 
-        controlPanel.setLayout(new BorderLayout());
+        controlPanel.setLayout(new GridLayout(1,10));
         controlPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        controlPanel.setPreferredSize(new Dimension(RIGHT_PANEL_WIDTH, ROW_HEIGHT));
-        bottomRow.add(controlPanel, BorderLayout.EAST);
+        controlPanel.setPreferredSize(new Dimension(ROW_WIDTH, ROW_HEIGHT));
+        controlPanel.setBorder(new EmptyBorder(2, 4, 2, 4));
+        add(controlPanel, BorderLayout.SOUTH);
 
-        addPack = new JLabel();
-        addPack.setIcon(ADD_ICON);
-        addPack.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    tilePackManager.addEnabledPack(pack.id);
-                    pointManager.loadPoints();
-                    removePack.setIcon(REMOVE_ICON_HOVER);
-                    controlPanel.add(removePack, BorderLayout.EAST);
-                    controlPanel.remove(addPack);
-                    controlPanel.revalidate();
-                    controlPanel.repaint();
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                addPack.setIcon(ADD_ICON_HOVER);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                addPack.setIcon(ADD_ICON);
-            }
-        });
-
-        removePack = new JLabel();
-        removePack.setIcon(REMOVE_ICON);
-        removePack.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    tilePackManager.removeEnabledPack(pack.id);
-                    pointManager.loadPoints();
-                    addPack.setIcon(ADD_ICON_HOVER);
-                    controlPanel.add(addPack, BorderLayout.EAST);
-                    controlPanel.remove(removePack);
-                    controlPanel.revalidate();
-                    controlPanel.repaint();
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                removePack.setIcon(REMOVE_ICON_HOVER);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                removePack.setIcon(REMOVE_ICON);
-            }
-        });
-
-        if (pack.link != null && pack.link != "") {
-            helpLink = new JLabel();
-            helpLink.setIcon(HELP_ICON);
-            helpLink.setToolTipText("Click to open source of pack in browser");
-            helpLink.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        LinkBrowser.browse(pack.link);
-                    }
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    helpLink.setIcon(HELP_ICON_HOVER);
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    helpLink.setIcon(HELP_ICON);
-                }
-            });
-
-            controlPanel.add(helpLink, BorderLayout.WEST);
-        }
-
-        if (enabled) {
-            controlPanel.add(removePack, BorderLayout.EAST);
-        } else {
-            controlPanel.add(addPack, BorderLayout.EAST);
-        }
+        placeholder1 = new JLabel();
+        controlPanel.add(placeholder1);
+        placeholder2 = new JLabel();
+        controlPanel.add(placeholder2);
+        placeholder3 = new JLabel();
+        controlPanel.add(placeholder3);
+        placeholder4 = new JLabel();
+        controlPanel.add(placeholder4);
+        placeholder5 = new JLabel();
+        controlPanel.add(placeholder5);
+        placeholder6 = new JLabel();
+        controlPanel.add(placeholder6);
+        placeholder7 = new JLabel();
+        controlPanel.add(placeholder7);
 
         //anything over 10k is a custom pack
-        if (pack.id >= 10000) {
+        if (tilePack.id >= 10000) {
+            deleteCustomPack = new DeleteCustomPackLabel(tilePackManager, pointManager, tilePack, tilePacksList);
+        } else {
             deleteCustomPack = new JLabel();
-            deleteCustomPack.setIcon(DELETE_ICON);
-            deleteCustomPack.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        final int result = JOptionPane.showOptionDialog(topRow,
-                                "Are you sure you want to delete this pack?",
-                                "Delete Pack?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-                                null, new String[]{"Yes", "No"}, "No");
-
-                        if (result == JOptionPane.YES_OPTION) {
-                            tilePackManager.removeCustomPack(pack.id);
-                            tilePackManager.loadPacks();
-                            pointManager.loadPoints();
-                            panel.loadPacks();
-                            controlPanel.revalidate();
-                            controlPanel.repaint();
-                        }
-                    }
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    deleteCustomPack.setIcon(DELETE_ICON_HOVER);
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    deleteCustomPack.setIcon(DELETE_ICON);
-                }
-            });
-            controlPanel.add(deleteCustomPack, BorderLayout.WEST);
         }
+        controlPanel.add(deleteCustomPack);
+
+        if (!Strings.isNullOrEmpty(tilePack.link)) {
+            helpLink = new HelpLinkLabel(tilePack);
+        } else {
+            helpLink = new JLabel();
+        }
+        controlPanel.add(helpLink);
+
+        togglePack = new TogglePackLabel(tilePackManager, pointManager, tilePack);
+        controlPanel.add(togglePack);
     }
 }
