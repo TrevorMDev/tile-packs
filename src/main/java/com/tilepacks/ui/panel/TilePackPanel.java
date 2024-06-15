@@ -41,7 +41,10 @@ import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.LinkBrowser;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -53,9 +56,7 @@ import java.awt.image.BufferedImage;
  * One exists for each TilePack
  */
 public class TilePackPanel extends JPanel {
-    private static final int ROW_WIDTH = PluginPanel.PANEL_WIDTH - 10;
-    private static final int ROW_HEIGHT = 30;
-    private static final int CONTROL_SIZE = 20;
+    private static final int CONTROL_SIZE = 16;
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
@@ -65,19 +66,9 @@ public class TilePackPanel extends JPanel {
     private final JPanel topRow = new JPanel();
     private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
-    // These placeholder labels give us a grid of 10 control icons
-    // Without a fixed number of icons, the controls resize and move around.
-    // Because built in and custom packs have different options
-    private final JLabel placeholder1;
-    private final JLabel placeholder2;
-    private final JLabel placeholder3;
-    private final JLabel placeholder4;
-    private final JLabel placeholder5;
-    private final JLabel placeholder6;
-    private final JLabel placeholder7;
-    private final JLabel deleteCustomPack;
-    private final JLabel helpLink;
-    private final JLabel togglePack;
+    private JLabel deleteCustomPack;
+    private JLabel helpLink;
+    private JLabel togglePack;
 
     TilePackPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson, TilePacksListPanel tilePacksList, TilePack tilePack) {
         super();
@@ -89,39 +80,21 @@ public class TilePackPanel extends JPanel {
         log.debug("Loading pack - {}", tilePack.packName);
 
         this.setLayout(new BorderLayout());
-        this.setBackground(ColorScheme.BRAND_ORANGE);
-        this.setBorder(new EmptyBorder(2, 2, 2, 2));
+        this.setBorder(new EmptyBorder(3, 2, 3, 2));
 
         topRow.setLayout(new BorderLayout());
-        topRow.setBackground(ColorScheme.MEDIUM_GRAY_COLOR);
-        topRow.setPreferredSize(new Dimension(ROW_WIDTH, ROW_HEIGHT));
-        topRow.setBorder(new EmptyBorder(4, 4, 4, 4));
+        topRow.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+        topRow.setBorder(new EmptyBorder(2, 4, 1, 4));
         add(topRow, BorderLayout.NORTH);
 
         packName = new JLabel(tilePack.packName);
         packName.setFont(FontManager.getRunescapeFont());
         topRow.add(packName, BorderLayout.WEST);
 
-        controlPanel.setLayout(new GridLayout(1,10));
+        controlPanel.setLayout(new FlowLayout(FlowLayout.TRAILING, 4, 6));
         controlPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        controlPanel.setPreferredSize(new Dimension(ROW_WIDTH, ROW_HEIGHT));
-        controlPanel.setBorder(new EmptyBorder(2, 4, 2, 4));
+        controlPanel.setBorder(new MatteBorder(1, 0, 0, 0, ColorScheme.DARK_GRAY_COLOR));
         add(controlPanel, BorderLayout.SOUTH);
-
-        placeholder1 = new JLabel();
-        controlPanel.add(placeholder1);
-        placeholder2 = new JLabel();
-        controlPanel.add(placeholder2);
-        placeholder3 = new JLabel();
-        controlPanel.add(placeholder3);
-        placeholder4 = new JLabel();
-        controlPanel.add(placeholder4);
-        placeholder5 = new JLabel();
-        controlPanel.add(placeholder5);
-        placeholder6 = new JLabel();
-        controlPanel.add(placeholder6);
-        placeholder7 = new JLabel();
-        controlPanel.add(placeholder7);
 
         //anything over 10k is a custom pack
         if (tilePack.id >= 10000) {
@@ -129,6 +102,7 @@ public class TilePackPanel extends JPanel {
         } else {
             deleteCustomPack = new JLabel();
         }
+        deleteCustomPack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(deleteCustomPack);
 
         if (!Strings.isNullOrEmpty(tilePack.link)) {
@@ -136,9 +110,11 @@ public class TilePackPanel extends JPanel {
         } else {
             helpLink = new JLabel();
         }
+        helpLink.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(helpLink);
 
         togglePack = new TogglePackLabel(tilePackManager, pointManager, tilePack);
+        togglePack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(togglePack);
     }
 }
