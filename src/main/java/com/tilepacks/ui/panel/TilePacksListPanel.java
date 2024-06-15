@@ -30,7 +30,6 @@ import com.google.gson.Gson;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePack;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;

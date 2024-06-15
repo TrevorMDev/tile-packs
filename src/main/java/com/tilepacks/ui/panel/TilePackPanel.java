@@ -30,25 +30,15 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
-import com.tilepacks.TilePacksPlugin;
 import com.tilepacks.data.TilePack;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.ui.DynamicGridLayout;
 import net.runelite.client.ui.FontManager;
-import net.runelite.client.ui.PluginPanel;
-import net.runelite.client.util.ImageUtil;
-import net.runelite.client.util.LinkBrowser;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 
 @Slf4j
 /**
@@ -66,9 +56,9 @@ public class TilePackPanel extends JPanel {
     private final JPanel topRow = new JPanel();
     private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
-    private JLabel deleteCustomPack;
-    private JLabel helpLink;
-    private JLabel togglePack;
+    private final JLabel deleteCustomPack;
+    private final JLabel helpLink;
+    private final JLabel togglePack;
 
     TilePackPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson, TilePacksListPanel tilePacksList, TilePack tilePack) {
         super();
