@@ -35,7 +35,6 @@ import com.tilepacks.data.TilePack;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;

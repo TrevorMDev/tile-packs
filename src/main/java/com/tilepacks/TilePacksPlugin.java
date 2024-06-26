@@ -85,6 +85,7 @@ public class TilePacksPlugin extends Plugin {
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
         panel = new TilePacksListPanel(tilePackManager, pointManager, tilePackConfigManager, gson);
+
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
 
         navButton = NavigationButton.builder()
