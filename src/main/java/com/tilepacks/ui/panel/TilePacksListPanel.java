@@ -57,7 +57,7 @@ public class TilePacksListPanel extends PluginPanel {
         this.pointManager = pointManager;
         this.gson = gson;
 
-        this.searchBar = new IconTextField();
+        searchBar = new IconTextField();
         searchBar.setIcon(IconTextField.Icon.SEARCH);
         searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
         searchBar.setBackground(ColorScheme.DARKER_GRAY_COLOR);

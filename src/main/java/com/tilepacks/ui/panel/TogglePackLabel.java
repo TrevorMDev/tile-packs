@@ -65,14 +65,13 @@ public class TogglePackLabel extends JLabel {
         this.tilePack = tilePack;
 
         if(tilePackManager.isPackEnabled(tilePack.id)) {
-            this.setIcon(REMOVE_ICON);
+            setIcon(REMOVE_ICON);
             setToolTipText("Remove tiles");
         } else {
-            this.setIcon(ADD_ICON);
-            this.setToolTipText("Add tiles");
+            setIcon(ADD_ICON);
+            setToolTipText("Add tiles");
         }
-        this.setToolTipText("Click to open source of pack in browser");
-        this.addMouseListener(new HelpLinkMouseAdapter());
+        addMouseListener(new HelpLinkMouseAdapter());
     }
 
     class HelpLinkMouseAdapter extends MouseAdapter {

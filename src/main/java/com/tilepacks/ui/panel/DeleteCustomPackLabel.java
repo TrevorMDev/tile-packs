@@ -61,9 +61,9 @@ public class DeleteCustomPackLabel extends JLabel {
         this.tilePack = tilePack;
         this.tilePacksList = tilePacksList;
 
-        this.setIcon(DELETE_ICON);
-        this.setToolTipText("Delete this custom pack, this is permanent");
-        this.addMouseListener(new DeleteCustomPackMouseAdapter(this));
+        setIcon(DELETE_ICON);
+        setToolTipText("Delete this custom pack, this is permanent");
+        addMouseListener(new DeleteCustomPackMouseAdapter(this));
     }
 
     class DeleteCustomPackMouseAdapter extends MouseAdapter {

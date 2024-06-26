@@ -113,12 +113,14 @@ public class TilePacksPlugin extends Plugin {
     @Subscribe
     public void onConfigChanged(final ConfigChanged event) {
         if (event.getGroup().equals(TilePacksConfig.GROUP)) {
-            if ("hidePlugin".equals(event.getKey())) {
-                if (config.hidePlugin()) {
-                    clientToolbar.removeNavigation(navButton);
-                } else {
-                    clientToolbar.addNavigation(navButton);
-                }
+            switch (event.getKey()) {
+                case "hidePlugin":
+                    if (config.hidePlugin()) {
+                        clientToolbar.removeNavigation(navButton);
+                    } else {
+                        clientToolbar.addNavigation(navButton);
+                    }
+                    break;
             }
         }
     }

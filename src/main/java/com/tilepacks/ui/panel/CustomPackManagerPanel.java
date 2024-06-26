@@ -57,20 +57,20 @@ public class CustomPackManagerPanel extends PluginPanel {
         this.gson = gson;
         this.tilePacksList = tilePacksList;
 
-        this.inputLabel = new JLabel("Custom Pack Name");
+        inputLabel = new JLabel("Custom Pack Name");
         add(inputLabel);
 
-        this.nameInput = new FlatTextField();
+        nameInput = new FlatTextField();
         nameInput.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
         nameInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         nameInput.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);
         nameInput.setMinimumSize(new Dimension(0, 30));
         add(nameInput);
 
-        this.tilesLabel = new JLabel("Custom Pack Tiles");
+        tilesLabel = new JLabel("Custom Pack Tiles");
         add(tilesLabel);
 
-        this.tilesInput = new FlatTextField();
+        tilesInput = new FlatTextField();
         tilesInput.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
         tilesInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         tilesInput.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);

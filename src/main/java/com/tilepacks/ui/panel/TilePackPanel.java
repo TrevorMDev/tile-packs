@@ -44,9 +44,15 @@ import java.awt.*;
 /**
  * UI container for the TilePack and its controls
  * One exists for each TilePack
+ *
+ * Icons are from https://www.flaticon.com/free-icons
+ * All icons are 20x20
+ * Grey icons are #858585
+ * Green icons are #4CAF50
+ * Red icons are #E31C1C
  */
 public class TilePackPanel extends JPanel {
-    private static final int CONTROL_SIZE = 16;
+    private static final int CONTROL_SIZE = 20;
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
@@ -69,8 +75,8 @@ public class TilePackPanel extends JPanel {
 
         log.debug("Loading pack - {}", tilePack.packName);
 
-        this.setLayout(new BorderLayout());
-        this.setBorder(new EmptyBorder(3, 2, 3, 2));
+        setLayout(new BorderLayout());
+        setBorder(new EmptyBorder(3, 2, 3, 2));
 
         topRow.setLayout(new BorderLayout());
         topRow.setBackground(ColorScheme.DARKER_GRAY_COLOR);
