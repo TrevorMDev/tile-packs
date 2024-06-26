@@ -27,7 +27,7 @@ package com.tilepacks;
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.tilepacks.data.CustomConfig;
+import com.tilepacks.data.TilePackConfig;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
@@ -44,49 +44,49 @@ import java.util.Map;
  */
 @Slf4j
 @Value
-public class CustomConfigManager {
+public class TilePackConfigManager {
     private static final String CONFIG_GROUP = "tilePacks";
-    private static final String CUSTOM_CONFIG = "customConfigs";
+    private static final String TILE_PACK_CONFIGS = "tilePackConfigs";
 
     @NonFinal
-    private Map<Integer, CustomConfig> customConfigs = new HashMap<Integer, CustomConfig>();
+    private Map<Integer, TilePackConfig> customConfigs = new HashMap<Integer, TilePackConfig>();
 
     private final Gson gson;
     private final ConfigManager configManager;
 
     @Inject
-    CustomConfigManager(Gson gson, ConfigManager configManager) {
+    TilePackConfigManager(Gson gson, ConfigManager configManager) {
         this.gson = gson;
         this.configManager = configManager;
-        this.loadCustomConfigs();
+        this.loadTilePackConfigs();
     }
 
     //loads the custom pack configs from the settings file
-    private void loadCustomConfigs() {
-        String json = configManager.getConfiguration(CONFIG_GROUP, CUSTOM_CONFIG);
+    private void loadTilePackConfigs() {
+        String json = configManager.getConfiguration(CONFIG_GROUP, TILE_PACK_CONFIGS);
 
         if (Strings.isNullOrEmpty(json)) {
             return;
         }
-        customConfigs = gson.fromJson(json, new TypeToken<Map<Integer, CustomConfig>>() {
+        customConfigs = gson.fromJson(json, new TypeToken<Map<Integer, TilePackConfig>>() {
         }.getType());
     }
 
     //replaces a config with the latest version, then saves the custom config list.
-    public void updateCustomConfig(CustomConfig customConfig) {
-        customConfigs.put(customConfig.packId, customConfig);
+    public void updateTilePackConfig(TilePackConfig tilePackConfig) {
+        customConfigs.put(tilePackConfig.packId, tilePackConfig);
 
         String json = gson.toJson(customConfigs);
-        configManager.setConfiguration(CONFIG_GROUP, CUSTOM_CONFIG, json);
+        configManager.setConfiguration(CONFIG_GROUP, TILE_PACK_CONFIGS, json);
     }
 
     //returns the custom config of a pack, or a default config if it doesn't exist.
-    public CustomConfig fetchCustomConfig(Integer packId) {
-        CustomConfig customConfig = customConfigs.get(packId);
-        if(customConfig != null) {
-            return customConfig;
+    public TilePackConfig getTilePackConfig(Integer packId) {
+        TilePackConfig tilePackConfig = customConfigs.get(packId);
+        if(tilePackConfig != null) {
+            return tilePackConfig;
         }
 
-        return new CustomConfig(packId, true);
+        return new TilePackConfig(packId, true);
     }
 }

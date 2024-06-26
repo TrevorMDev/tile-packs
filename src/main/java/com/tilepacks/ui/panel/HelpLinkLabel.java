@@ -54,9 +54,9 @@ public class HelpLinkLabel extends JLabel {
         super();
         this.tilePack = tilePack;
 
-        this.setIcon(HELP_ICON);
-        this.setToolTipText("Click to open source of pack in browser");
-        this.addMouseListener(new HelpLinkMouseAdapter());
+        setIcon(HELP_ICON);
+        setToolTipText("Click to open source of pack in browser");
+        addMouseListener(new HelpLinkMouseAdapter());
     }
 
     class HelpLinkMouseAdapter extends MouseAdapter {

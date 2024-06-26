@@ -27,13 +27,15 @@ package com.tilepacks.ui.panel;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.tilepacks.TilePackConfigManager;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
+import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -47,18 +49,21 @@ public class TilePacksListPanel extends PluginPanel {
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
+    private final TilePackConfigManager tilePackConfigManager;
     private final Gson gson;
 
     private final IconTextField searchBar;
     private final JPanel listContainer = new JPanel();
 
-    public TilePacksListPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson) {
+    public TilePacksListPanel(TilePackManager tilePackManager, PointManager pointManager,
+                              TilePackConfigManager tilePackConfigManager, Gson gson) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
+        this.tilePackConfigManager = tilePackConfigManager;
         this.gson = gson;
 
-        this.searchBar = new IconTextField();
+        searchBar = new IconTextField();
         searchBar.setIcon(IconTextField.Icon.SEARCH);
         searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
         searchBar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
@@ -95,9 +100,13 @@ public class TilePacksListPanel extends PluginPanel {
         listContainer.removeAll();
         String search = searchBar.getText();
         for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet()) {
-            //TODO add search keys to the TilePack so you can search on more than the name.
-            if (Strings.isNullOrEmpty(search) || pack.getValue().packName.toLowerCase().contains(search.toLowerCase())) {
-                JPanel tile = new TilePackPanel(tilePackManager, pointManager, gson, this, pack.getValue());
+            TilePack tilePack = pack.getValue();
+            TilePackConfig tilePackConfig = tilePackConfigManager.getTilePackConfig(tilePack.id);
+            boolean matchesSearch = Strings.isNullOrEmpty(search) || tilePack.packName.toLowerCase().contains(search.toLowerCase());
+
+            if (matchesSearch) {
+                JPanel tile = new TilePackPanel(tilePackManager, pointManager, tilePackConfigManager, gson,
+                        this, tilePack, tilePackConfig);
                 listContainer.add(tile);
             }
         }

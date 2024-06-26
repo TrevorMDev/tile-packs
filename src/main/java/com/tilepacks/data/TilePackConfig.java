@@ -29,11 +29,11 @@ package com.tilepacks.data;
  * This is separate from the pack storage because it allows the custom configs to be applied to the default packs
  * without storing them into the settings file.
  */
-public class CustomConfig {
+public class TilePackConfig {
     public Integer packId;
     public boolean visible;
 
-    public CustomConfig(Integer packId, boolean visible) {
+    public TilePackConfig(Integer packId, boolean visible) {
         this.packId = packId;
         this.visible = visible;
     }
