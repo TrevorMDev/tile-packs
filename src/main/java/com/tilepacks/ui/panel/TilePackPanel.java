@@ -94,8 +94,6 @@ public class TilePackPanel extends JPanel {
         topRow.setBorder(new EmptyBorder(2, 4, 1, 4));
         add(topRow, BorderLayout.NORTH);
 
-//       setVisible(tilePackConfig.visible);
-
         packName = new JLabel(tilePack.packName);
         packName.setFont(FontManager.getRunescapeFont());
         topRow.add(packName, BorderLayout.WEST);
@@ -114,7 +112,7 @@ public class TilePackPanel extends JPanel {
         deleteCustomPack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(deleteCustomPack);
 
-        toggleVisible = new ToggleVisibleLabel(tilePackConfigManager, tilePack, tilePackConfig);
+        toggleVisible = new ToggleVisibleLabel(tilePackConfigManager, tilePack, tilePackConfig, tilePacksList);
         toggleVisible.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(toggleVisible);
 

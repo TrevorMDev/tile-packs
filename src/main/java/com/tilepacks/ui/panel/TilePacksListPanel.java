@@ -104,7 +104,7 @@ public class TilePacksListPanel extends PluginPanel {
             TilePackConfig tilePackConfig = tilePackConfigManager.getTilePackConfig(tilePack.id);
             boolean matchesSearch = Strings.isNullOrEmpty(search) || tilePack.packName.toLowerCase().contains(search.toLowerCase());
 
-            if (matchesSearch) {
+            if (matchesSearch && tilePackConfig.visible) {
                 JPanel tile = new TilePackPanel(tilePackManager, pointManager, tilePackConfigManager, gson,
                         this, tilePack, tilePackConfig);
                 listContainer.add(tile);

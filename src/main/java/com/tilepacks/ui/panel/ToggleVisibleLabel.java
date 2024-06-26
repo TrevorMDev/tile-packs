@@ -50,6 +50,7 @@ public class ToggleVisibleLabel extends JLabel {
 
     private final TilePack tilePack;
     private final TilePackConfig tilePackConfig;
+    private final TilePacksListPanel tilePacksList;
 
     static {
         final BufferedImage visibleIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "visible_icon.png");
@@ -61,11 +62,15 @@ public class ToggleVisibleLabel extends JLabel {
         INVISIBLE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(invisibleIcon, 0.50f));
     }
 
-    ToggleVisibleLabel(TilePackConfigManager tilePackConfigManager, TilePack tilePack, TilePackConfig tilePackConfig) {
+    ToggleVisibleLabel(TilePackConfigManager tilePackConfigManager,
+                       TilePack tilePack,
+                       TilePackConfig tilePackConfig,
+                       TilePacksListPanel tilePacksList) {
         super();
         this.tilePackConfigManager = tilePackConfigManager;
         this.tilePack = tilePack;
         this.tilePackConfig = tilePackConfig;
+        this.tilePacksList = tilePacksList;
 
         if(tilePackConfig.visible) {
             setIcon(VISIBLE_ICON);
@@ -91,6 +96,7 @@ public class ToggleVisibleLabel extends JLabel {
                     setToolTipText("Show tile pack in main list");
                 }
                 tilePackConfigManager.updateTilePackConfig(tilePackConfig);
+                tilePacksList.createTilePackPanels();
             }
         }
 
