@@ -30,20 +30,19 @@ import com.google.gson.Gson;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePack;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.List;
 import java.util.Map;
 
-@Slf4j
-public class TilePacksPanel extends PluginPanel {
+/**
+ * UI panel parent, contains all content for the panel.
+ */
+public class TilePacksListPanel extends PluginPanel {
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
@@ -52,13 +51,13 @@ public class TilePacksPanel extends PluginPanel {
     private final IconTextField searchBar;
     private final JPanel listContainer = new JPanel();
 
-    public TilePacksPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson) {
+    public TilePacksListPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
         this.gson = gson;
 
-        this.searchBar = new IconTextField();
+        searchBar = new IconTextField();
         searchBar.setIcon(IconTextField.Icon.SEARCH);
         searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
         searchBar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
@@ -75,30 +74,29 @@ public class TilePacksPanel extends PluginPanel {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                loadPacks();
+                createTilePackPanels();
             }
         });
-        searchBar.addClearListener(() -> loadPacks());
+        searchBar.addClearListener(() -> createTilePackPanels());
         add(searchBar);
 
         add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1, 0, 0));
 
-        CustomPackManager customPackManager = new CustomPackManager(tilePackManager, gson, this);
+        CustomPackManagerPanel customPackManager = new CustomPackManagerPanel(tilePackManager, gson, this);
 
         add(customPackManager);
 
-        loadPacks();
+        createTilePackPanels();
     }
 
-    public void loadPacks() {
+    public void createTilePackPanels() {
         listContainer.removeAll();
         String search = searchBar.getText();
-        List<Integer> enabledPacks = tilePackManager.loadEnabledPacks();
-        for (Map.Entry<Integer, TilePack> pack : tilePackManager.getPacks().entrySet()) {
+        for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet()) {
             //TODO add search keys to the TilePack so you can search on more than the name.
             if (Strings.isNullOrEmpty(search) || pack.getValue().packName.toLowerCase().contains(search.toLowerCase())) {
-                JPanel tile = new PackPanel(tilePackManager, pointManager, gson, this, pack.getValue(), enabledPacks.contains(pack.getKey()));
+                JPanel tile = new TilePackPanel(tilePackManager, pointManager, gson, this, pack.getValue());
                 listContainer.add(tile);
             }
         }

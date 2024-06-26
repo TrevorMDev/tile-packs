@@ -30,7 +30,7 @@ import com.google.gson.Gson;
 import com.google.inject.Provides;
 import com.tilepacks.ui.overlay.GroundMarkerMinimapOverlay;
 import com.tilepacks.ui.overlay.GroundMarkerOverlay;
-import com.tilepacks.ui.panel.TilePacksPanel;
+import com.tilepacks.ui.panel.TilePacksListPanel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
@@ -70,19 +70,18 @@ public class TilePacksPlugin extends Plugin {
     private GroundMarkerOverlay overlay;
     private TilePackManager tilePackManager;
     private PointManager pointManager;
-    private TilePacksPanel panel;
+    private TilePacksListPanel panel;
     private NavigationButton navButton;
 
     @Override
     protected void startUp() throws Exception {
         tilePackManager = new TilePackManager(gson, configManager);
-        tilePackManager.loadPacks();
         pointManager = new PointManager(tilePackManager, gson, client);
         overlay = new GroundMarkerOverlay(pointManager, client, config);
         minimapOverlay = new GroundMarkerMinimapOverlay(pointManager, client, config);
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
-        panel = new TilePacksPanel(tilePackManager, pointManager, gson);
+        panel = new TilePacksListPanel(tilePackManager, pointManager, gson);
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
 
         navButton = NavigationButton.builder()
