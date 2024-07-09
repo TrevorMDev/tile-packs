@@ -45,7 +45,7 @@ import java.awt.*;
  * UI container for the TilePack and its controls
  * One exists for each TilePack
  *
- * Icons are from https://www.flaticon.com/free-icons
+ * Icons are from https://www.flaticon.com/
  * All icons are 20x20
  * Grey icons are #858585
  * Green icons are #4CAF50
