@@ -49,6 +49,8 @@ public class DeleteCustomPackLabel extends JLabel {
     private final TilePacksListPanel tilePacksList;
 
     static {
+        // Icon is https://www.flaticon.com/free-icon/close_1828665
+        // Made by https://www.flaticon.com/authors/pixel-perfect
         final BufferedImage deleteIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "delete_icon.png");
         DELETE_ICON = new ImageIcon(deleteIcon);
         DELETE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(deleteIcon, 0.50f));

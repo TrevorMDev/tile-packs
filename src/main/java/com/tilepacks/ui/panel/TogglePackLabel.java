@@ -50,9 +50,13 @@ public class TogglePackLabel extends JLabel {
     private final TilePack tilePack;
 
     static {
+        // Icon is https://www.flaticon.com/free-icon/plus_1828819
+        // Made by https://www.flaticon.com/authors/pixel-perfect
         final BufferedImage addIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "add_icon.png");
         ADD_ICON = new ImageIcon(addIcon);
         ADD_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(addIcon, 0.53f));
+        // Icon is https://www.flaticon.com/free-icon/minus_1143362
+        // Made by https://www.flaticon.com/authors/utari-nuraeni
         final BufferedImage removeIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "remove_icon.png");
         REMOVE_ICON = new ImageIcon(removeIcon);
         REMOVE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.50f));

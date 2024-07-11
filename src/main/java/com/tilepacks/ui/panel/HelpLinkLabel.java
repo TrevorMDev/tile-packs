@@ -45,6 +45,8 @@ public class HelpLinkLabel extends JLabel {
     private final TilePack tilePack;
 
     static {
+        // Icon is https://www.flaticon.com/free-icon/resize_3388930
+        // Made by https://www.flaticon.com/authors/pixel-perfect
         final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "help_icon.png");
         HELP_ICON = new ImageIcon(helpIcon);
         HELP_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));

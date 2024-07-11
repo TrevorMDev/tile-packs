@@ -13,3 +13,8 @@ Use this tool to double-check your exported tiles. https://runelite.net/tile/
 [Tile Packs Discord](https://discord.gg/4EQRWxY3Wb)
 
 [Buy me a Coffee](https://buymeacoffee.com/trevormdev)
+
+----
+## Credits
+
+Icons made by [Freepik](https://www.flaticon.com/authors/pixel-perfect) and [Utari Nuraeni](https://www.flaticon.com/authors/utari-nuraeni) from [flaticon.com](https://www.flaticon.com/).
