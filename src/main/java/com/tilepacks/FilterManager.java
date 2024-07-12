@@ -44,49 +44,62 @@ import java.util.Map;
  */
 @Slf4j
 @Value
-public class TilePackConfigManager {
+public class FilterManager {
     private static final String CONFIG_GROUP = "tilePacks";
-    private static final String TILE_PACK_CONFIGS = "tilePackConfigs";
+    private static final String SHOW_VISIBLE = "showVisible";
+    private static final String SHOW_INVISIBLE = "showInvisible";
 
     @NonFinal
-    private Map<Integer, TilePackConfig> customConfigs = new HashMap<Integer, TilePackConfig>();
+    private boolean showVisible;
+    @NonFinal
+    private boolean showInvisible;
 
-    private final Gson gson;
     private final ConfigManager configManager;
 
     @Inject
-    TilePackConfigManager(Gson gson, ConfigManager configManager) {
-        this.gson = gson;
+    FilterManager( ConfigManager configManager) {
         this.configManager = configManager;
-        this.loadTilePackConfigs();
+        this.loadFilters();
     }
 
-    //loads the custom pack configs from the settings file
-    private void loadTilePackConfigs() {
-        String json = configManager.getConfiguration(CONFIG_GROUP, TILE_PACK_CONFIGS);
+    //loads the filters from the config
+    private void loadFilters() {
+        String showVisibleConfig = configManager.getConfiguration(CONFIG_GROUP, SHOW_VISIBLE);
 
-        if (Strings.isNullOrEmpty(json)) {
-            return;
-        }
-        customConfigs = gson.fromJson(json, new TypeToken<Map<Integer, TilePackConfig>>() {
-        }.getType());
-    }
-
-    //replaces a config with the latest version, then saves the custom config list.
-    public void updateTilePackConfig(TilePackConfig tilePackConfig) {
-        customConfigs.put(tilePackConfig.packId, tilePackConfig);
-
-        String json = gson.toJson(customConfigs);
-        configManager.setConfiguration(CONFIG_GROUP, TILE_PACK_CONFIGS, json);
-    }
-
-    //returns the custom config of a pack, or a default config if it doesn't exist.
-    public TilePackConfig getTilePackConfig(Integer packId) {
-        TilePackConfig tilePackConfig = customConfigs.get(packId);
-        if(tilePackConfig != null) {
-            return tilePackConfig;
+        if (Strings.isNullOrEmpty(showVisibleConfig)) {
+            this.showVisible = true;
+        } else {
+            this.showVisible = Boolean.parseBoolean(showVisibleConfig);
         }
 
-        return new TilePackConfig(packId, true);
+        String showInvisibleConfig = configManager.getConfiguration(CONFIG_GROUP, SHOW_INVISIBLE);
+
+        if (Strings.isNullOrEmpty(showInvisibleConfig)) {
+            this.showInvisible = false;
+        } else {
+            this.showInvisible = Boolean.parseBoolean(showInvisibleConfig);
+        }
+    }
+
+    //sets showVisible in the config
+    public void setShowVisible(boolean showVisible) {
+        this.showVisible = showVisible;
+        configManager.setConfiguration(CONFIG_GROUP, SHOW_VISIBLE, showVisible);
+    }
+
+    //returns the value of showVisible
+    public boolean getShowVisible() {
+        return this.showVisible;
+    }
+
+    //sets showInvisible in the config
+    public void setShowInvisible(boolean showInvisible) {
+        this.showInvisible = showInvisible;
+        configManager.setConfiguration(CONFIG_GROUP, SHOW_INVISIBLE, showInvisible);
+    }
+
+    //returns the value of showVisible
+    public boolean getShowInvisible() {
+        return this.showInvisible;
     }
 }

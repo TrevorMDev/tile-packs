@@ -27,18 +27,17 @@ package com.tilepacks.ui.panel;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.tilepacks.FilterManager;
 import com.tilepacks.TilePackConfigManager;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
-import net.runelite.client.ui.ColorScheme;
+import com.tilepacks.ui.panel.header.HeaderPanel;
 import net.runelite.client.ui.PluginPanel;
-import net.runelite.client.ui.components.IconTextField;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.Map;
 
 /**
@@ -49,41 +48,24 @@ public class TilePacksListPanel extends PluginPanel {
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
     private final TilePackConfigManager tilePackConfigManager;
+    private final FilterManager filterManager;
     private final Gson gson;
 
-    private final IconTextField searchBar;
+    private final HeaderPanel headerPanel;
     private final JPanel listContainer = new JPanel();
 
     public TilePacksListPanel(TilePackManager tilePackManager, PointManager pointManager,
-                              TilePackConfigManager tilePackConfigManager, Gson gson) {
+                              TilePackConfigManager tilePackConfigManager, FilterManager filterManager,
+                              Gson gson) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
         this.tilePackConfigManager = tilePackConfigManager;
+        this.filterManager = filterManager;
         this.gson = gson;
 
-        searchBar = new IconTextField();
-        searchBar.setIcon(IconTextField.Icon.SEARCH);
-        searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
-        searchBar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        searchBar.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);
-        searchBar.setMinimumSize(new Dimension(0, 30));
-        searchBar.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                createTilePackPanels();
-            }
-        });
-        searchBar.addClearListener(() -> createTilePackPanels());
-        add(searchBar);
+        headerPanel = new HeaderPanel(filterManager, this);
+        add(headerPanel);
 
         add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1, 0, 0));
@@ -97,13 +79,14 @@ public class TilePacksListPanel extends PluginPanel {
 
     public void createTilePackPanels() {
         listContainer.removeAll();
-        String search = searchBar.getText();
+        String search = headerPanel.getSearchText();
         for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet()) {
             TilePack tilePack = pack.getValue();
             TilePackConfig tilePackConfig = tilePackConfigManager.getTilePackConfig(tilePack.id);
             boolean matchesSearch = Strings.isNullOrEmpty(search) || tilePack.packName.toLowerCase().contains(search.toLowerCase());
+            boolean matchesFilters = (filterManager.getShowVisible() && tilePackConfig.visible) || (filterManager.getShowInvisible() && !tilePackConfig.visible);
 
-            if (matchesSearch && tilePackConfig.visible) {
+            if (matchesSearch && matchesFilters) {
                 JPanel tile = new TilePackPanel(tilePackManager, pointManager, tilePackConfigManager, gson,
                         this, tilePack, tilePackConfig);
                 listContainer.add(tile);

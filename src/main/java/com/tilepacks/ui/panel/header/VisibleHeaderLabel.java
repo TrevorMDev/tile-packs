@@ -23,102 +23,87 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks.ui.panel;
+package com.tilepacks.ui.panel.header;
 
-import com.tilepacks.TilePackConfigManager;
+import com.tilepacks.FilterManager;
 import com.tilepacks.TilePacksPlugin;
-import com.tilepacks.data.TilePackConfig;
-import com.tilepacks.data.TilePack;
+import com.tilepacks.ui.panel.TilePacksListPanel;
+import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
-import net.runelite.client.util.LinkBrowser;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 /**
- * UI control that handles the toggling of if a pack is visible or hidden
+ * UI control that handles the filtering of the list as visible, invisible or both.
  */
-public class ToggleVisibleLabel extends JLabel {
+public class VisibleHeaderLabel extends JLabel {
+    private static final ImageIcon VISIBLE_ICON_ACTIVE;
+    private static final ImageIcon VISIBLE_ICON_ACTIVE_HOVER;
     private static final ImageIcon VISIBLE_ICON;
     private static final ImageIcon VISIBLE_ICON_HOVER;
-    private static final ImageIcon INVISIBLE_ICON;
-    private static final ImageIcon INVISIBLE_ICON_HOVER;
 
-    private final TilePackConfigManager tilePackConfigManager;
-
-    private final TilePack tilePack;
-    private final TilePackConfig tilePackConfig;
+    private final FilterManager filterManager;
     private final TilePacksListPanel tilePacksList;
 
     static {
         // Icon is https://www.flaticon.com/free-icon/visibility_3395544
         // Made by https://www.flaticon.com/authors/andrean-prabowo
         final BufferedImage visibleIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "visible_icon.png");
+        VISIBLE_ICON_ACTIVE = new ImageIcon(ImageUtil.recolorImage(visibleIcon, Color.white));
+        VISIBLE_ICON_ACTIVE_HOVER = new ImageIcon(ImageUtil.recolorImage(visibleIcon, ColorUtil.colorWithAlpha(Color.white, 128)));
         VISIBLE_ICON = new ImageIcon(visibleIcon);
         VISIBLE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(visibleIcon, 0.50f));
-
-        // Icon is https://www.flaticon.com/free-icon/visible_4175339
-        // Made by https://www.flaticon.com/authors/uicon
-        final BufferedImage invisibleIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "invisible_icon.png");
-        INVISIBLE_ICON = new ImageIcon(invisibleIcon);
-        INVISIBLE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(invisibleIcon, 0.50f));
     }
 
-    ToggleVisibleLabel(TilePackConfigManager tilePackConfigManager,
-                       TilePack tilePack,
-                       TilePackConfig tilePackConfig,
-                       TilePacksListPanel tilePacksList) {
+    VisibleHeaderLabel(FilterManager filterManager, TilePacksListPanel tilePacksList) {
         super();
-        this.tilePackConfigManager = tilePackConfigManager;
-        this.tilePack = tilePack;
-        this.tilePackConfig = tilePackConfig;
+        this.filterManager = filterManager;
         this.tilePacksList = tilePacksList;
 
-        if(tilePackConfig.visible) {
-            setIcon(VISIBLE_ICON);
-            setToolTipText("Hide pack from list without deleting");
+        if(filterManager.getShowVisible()) {
+            setIcon(VISIBLE_ICON_ACTIVE);
         } else {
-            setIcon(INVISIBLE_ICON);
-            setToolTipText("Show tile pack in main list");
+            setIcon(VISIBLE_ICON);
         }
+        setToolTipText("Show visible tile packs");
 
-        this.addMouseListener(new ToggleVisibleMouseAdapter());
+        this.addMouseListener(new VisibleHeaderLabelMouseAdapter());
     }
 
-    class ToggleVisibleMouseAdapter extends MouseAdapter {
+    class VisibleHeaderLabelMouseAdapter extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
-                tilePackConfig.visible = !tilePackConfig.visible;
-                if(tilePackConfig.visible) {
-                    setIcon(VISIBLE_ICON);
-                    setToolTipText("Hide pack from list without deleting");
+                if(filterManager.getShowVisible()) {
+                    filterManager.setShowVisible(false);
+                    setIcon(VISIBLE_ICON_HOVER);
                 } else {
-                    setIcon(INVISIBLE_ICON);
-                    setToolTipText("Show tile pack in main list");
+                    filterManager.setShowVisible(true);
+                    setIcon(VISIBLE_ICON_ACTIVE_HOVER);
                 }
-                tilePackConfigManager.updateTilePackConfig(tilePackConfig);
                 tilePacksList.createTilePackPanels();
             }
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            if(tilePackConfig.visible) {
-                setIcon(VISIBLE_ICON_HOVER);
+            if(filterManager.getShowVisible()) {
+                setIcon(VISIBLE_ICON_ACTIVE_HOVER);
             } else {
-                setIcon(INVISIBLE_ICON_HOVER);
+                setIcon(VISIBLE_ICON_HOVER);
             }
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            if(tilePackConfig.visible) {
-                setIcon(VISIBLE_ICON);
+            if(filterManager.getShowVisible()) {
+                setIcon(VISIBLE_ICON_ACTIVE);
             } else {
-                setIcon(INVISIBLE_ICON);
+                setIcon(VISIBLE_ICON);
             }
         }
     }
