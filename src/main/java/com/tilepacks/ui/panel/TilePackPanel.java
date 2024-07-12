@@ -68,10 +68,10 @@ public class TilePackPanel extends JPanel {
     private final JPanel topRow = new JPanel();
     private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
-    private JLabel deleteCustomPack;
-    private JLabel toggleVisible;
-    private JLabel helpLink;
-    private JLabel togglePack;
+    private final JLabel deleteCustomPack;
+    private final JLabel toggleVisible;
+    private final JLabel helpLink;
+    private final JLabel togglePack;
 
     TilePackPanel(TilePackManager tilePackManager, PointManager pointManager, TilePackConfigManager tilePackConfigManager,
                   Gson gson, TilePacksListPanel tilePacksList, TilePack tilePack, TilePackConfig tilePackConfig) {

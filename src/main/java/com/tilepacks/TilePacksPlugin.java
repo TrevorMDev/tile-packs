@@ -47,7 +47,6 @@ import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
 import java.awt.image.BufferedImage;
-import java.util.logging.Filter;
 
 @Slf4j
 @PluginDescriptor(

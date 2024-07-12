@@ -38,9 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class is responsible for all functions that interface with or modify the custom configs of a TilePack.
- * A custom config is settings for a tile pack.
- * Both built in and custom packs have a config.
+ * This class is responsible for all functions that interface with or modify the configs related to global filters.
  */
 @Slf4j
 @Value
