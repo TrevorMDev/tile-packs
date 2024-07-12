@@ -70,6 +70,8 @@ public class TilePacksPlugin extends Plugin {
     private GroundMarkerOverlay overlay;
     private TilePackManager tilePackManager;
     private PointManager pointManager;
+    private TilePackConfigManager tilePackConfigManager;
+    private FilterManager filterManager;
     private TilePacksListPanel panel;
     private NavigationButton navButton;
 
@@ -77,11 +79,15 @@ public class TilePacksPlugin extends Plugin {
     protected void startUp() throws Exception {
         tilePackManager = new TilePackManager(gson, configManager);
         pointManager = new PointManager(tilePackManager, gson, client);
+        tilePackConfigManager = new TilePackConfigManager(gson, configManager);
+        filterManager = new FilterManager(configManager);
+
         overlay = new GroundMarkerOverlay(pointManager, client, config);
         minimapOverlay = new GroundMarkerMinimapOverlay(pointManager, client, config);
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
-        panel = new TilePacksListPanel(tilePackManager, pointManager, gson);
+        panel = new TilePacksListPanel(tilePackManager, pointManager, tilePackConfigManager, filterManager, gson);
+
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
 
         navButton = NavigationButton.builder()

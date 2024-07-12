@@ -29,7 +29,9 @@ package com.tilepacks.ui.panel;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.tilepacks.PointManager;
+import com.tilepacks.TilePackConfigManager;
 import com.tilepacks.TilePackManager;
+import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
@@ -56,22 +58,31 @@ public class TilePackPanel extends JPanel {
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
+    private final TilePackConfigManager tilePackConfigManager;
     private final Gson gson;
     private final TilePacksListPanel tilePacksList;
+
+    private final TilePack tilePack;
+    private final TilePackConfig tilePackConfig;
 
     private final JPanel topRow = new JPanel();
     private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
     private final JLabel deleteCustomPack;
+    private final JLabel toggleVisible;
     private final JLabel helpLink;
     private final JLabel togglePack;
 
-    TilePackPanel(TilePackManager tilePackManager, PointManager pointManager, Gson gson, TilePacksListPanel tilePacksList, TilePack tilePack) {
+    TilePackPanel(TilePackManager tilePackManager, PointManager pointManager, TilePackConfigManager tilePackConfigManager,
+                  Gson gson, TilePacksListPanel tilePacksList, TilePack tilePack, TilePackConfig tilePackConfig) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
+        this.tilePackConfigManager = tilePackConfigManager;
         this.gson = gson;
         this.tilePacksList = tilePacksList;
+        this.tilePack = tilePack;
+        this.tilePackConfig = tilePackConfig;
 
         log.debug("Loading pack - {}", tilePack.packName);
 
@@ -100,6 +111,10 @@ public class TilePackPanel extends JPanel {
         }
         deleteCustomPack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(deleteCustomPack);
+
+        toggleVisible = new ToggleVisibleLabel(tilePackConfigManager, tilePack, tilePackConfig, tilePacksList);
+        toggleVisible.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
+        controlPanel.add(toggleVisible);
 
         if (!Strings.isNullOrEmpty(tilePack.link)) {
             helpLink = new HelpLinkLabel(tilePack);
