@@ -94,7 +94,10 @@ public class TilePackPanel extends JPanel {
         topRow.setBorder(new EmptyBorder(2, 4, 1, 4));
         add(topRow, BorderLayout.NORTH);
 
-        packName = new JLabel(tilePack.packName);
+        packName = new JLabel();
+        // Disabling html prevents accidental leaking of IP via a shared tile pack
+        packName.putClientProperty("html.disable", Boolean.TRUE);
+        packName.setText(tilePack.packName);
         packName.setFont(FontManager.getRunescapeFont());
         topRow.add(packName, BorderLayout.WEST);
 
