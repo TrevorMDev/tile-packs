@@ -155,7 +155,7 @@ public class TilePackManager {
         configManager.setConfiguration(CONFIG_GROUP, CUSTOM_PACKS, json);
         configManager.setConfiguration(CONFIG_GROUP, CUSTOM_ID, customId);
 
-        enabledPacks.add(pack.id);
+        addEnabledPack(pack.id);
         tilePacks.put(pack.id, pack);
     }
 

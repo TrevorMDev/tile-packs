@@ -70,7 +70,7 @@ public class TilePacksListPanel extends PluginPanel {
         add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1, 0, 0));
 
-        CustomPackManagerPanel customPackManager = new CustomPackManagerPanel(tilePackManager, gson, this);
+        CustomPackManagerPanel customPackManager = new CustomPackManagerPanel(tilePackManager, pointManager, gson,this);
 
         add(customPackManager);
 

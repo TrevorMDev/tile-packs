@@ -26,6 +26,7 @@ package com.tilepacks.ui.panel;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.GroundMarkerPoint;
 import net.runelite.client.ui.ColorScheme;
@@ -42,6 +43,7 @@ import java.util.List;
 public class CustomPackManagerPanel extends PluginPanel {
 
     private final TilePackManager tilePackManager;
+    private final PointManager pointManager;
     private final Gson gson;
     private final TilePacksListPanel tilePacksList;
 
@@ -51,9 +53,11 @@ public class CustomPackManagerPanel extends PluginPanel {
     private final FlatTextField tilesInput;
     private final JButton addPackButton;
 
-    CustomPackManagerPanel(TilePackManager tilePackManager, Gson gson, TilePacksListPanel tilePacksList) {
+    CustomPackManagerPanel(TilePackManager tilePackManager, PointManager pointManager,
+                           Gson gson, TilePacksListPanel tilePacksList) {
         super();
         this.tilePackManager = tilePackManager;
+        this.pointManager = pointManager;
         this.gson = gson;
         this.tilePacksList = tilePacksList;
 
@@ -105,6 +109,7 @@ public class CustomPackManagerPanel extends PluginPanel {
                 return;
             }
             tilePackManager.addCustomPack(nameInput.getText(), tilesInput.getText());
+            pointManager.loadPoints();
             tilePacksList.createTilePackPanels();
         });
         add(addPackButton);
