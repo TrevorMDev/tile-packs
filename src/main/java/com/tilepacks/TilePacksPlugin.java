@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -65,6 +66,8 @@ public class TilePacksPlugin extends Plugin {
     private ClientToolbar clientToolbar;
     @Inject
     private OverlayManager overlayManager;
+    @Inject
+    private ChatMessageManager chatMessageManager;
 
     private GroundMarkerMinimapOverlay minimapOverlay;
     private GroundMarkerOverlay overlay;
@@ -86,7 +89,7 @@ public class TilePacksPlugin extends Plugin {
         minimapOverlay = new GroundMarkerMinimapOverlay(pointManager, client, config);
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
-        panel = new TilePacksListPanel(tilePackManager, pointManager, tilePackConfigManager, filterManager, gson);
+        panel = new TilePacksListPanel(tilePackManager, pointManager, tilePackConfigManager, filterManager, chatMessageManager, gson);
 
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
 

@@ -34,6 +34,7 @@ import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 
@@ -59,6 +60,7 @@ public class TilePackPanel extends JPanel {
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
     private final TilePackConfigManager tilePackConfigManager;
+    private final ChatMessageManager chatMessageManager;
     private final Gson gson;
     private final TilePacksListPanel tilePacksList;
 
@@ -70,15 +72,24 @@ public class TilePackPanel extends JPanel {
     private final JLabel packName;
     private final JLabel deleteCustomPack;
     private final JLabel toggleVisible;
+    private final JLabel copyToClipboard;
     private final JLabel helpLink;
     private final JLabel togglePack;
 
-    TilePackPanel(TilePackManager tilePackManager, PointManager pointManager, TilePackConfigManager tilePackConfigManager,
-                  Gson gson, TilePacksListPanel tilePacksList, TilePack tilePack, TilePackConfig tilePackConfig) {
+    TilePackPanel(TilePackManager tilePackManager,
+                  PointManager pointManager,
+                  TilePackConfigManager tilePackConfigManager,
+                  ChatMessageManager chatMessageManager,
+                  Gson gson,
+                  TilePacksListPanel tilePacksList,
+                  TilePack tilePack,
+                  TilePackConfig tilePackConfig
+    ) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
         this.tilePackConfigManager = tilePackConfigManager;
+        this.chatMessageManager = chatMessageManager;
         this.gson = gson;
         this.tilePacksList = tilePacksList;
         this.tilePack = tilePack;
@@ -118,6 +129,10 @@ public class TilePackPanel extends JPanel {
         toggleVisible = new ToggleVisibleLabel(tilePackConfigManager, tilePack, tilePackConfig, tilePacksList);
         toggleVisible.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(toggleVisible);
+
+        copyToClipboard = new CopyToClipboardLabel(chatMessageManager, gson, tilePack);
+        copyToClipboard.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
+        controlPanel.add(copyToClipboard);
 
         if (!Strings.isNullOrEmpty(tilePack.link)) {
             helpLink = new HelpLinkLabel(tilePack);

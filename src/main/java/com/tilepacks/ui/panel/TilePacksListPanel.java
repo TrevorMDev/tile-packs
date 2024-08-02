@@ -34,6 +34,7 @@ import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
 import com.tilepacks.ui.panel.header.HeaderPanel;
+import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.ui.PluginPanel;
 
 import javax.swing.*;
@@ -49,19 +50,25 @@ public class TilePacksListPanel extends PluginPanel {
     private final PointManager pointManager;
     private final TilePackConfigManager tilePackConfigManager;
     private final FilterManager filterManager;
+    private final ChatMessageManager chatMessageManager;
     private final Gson gson;
 
     private final HeaderPanel headerPanel;
     private final JPanel listContainer = new JPanel();
 
-    public TilePacksListPanel(TilePackManager tilePackManager, PointManager pointManager,
-                              TilePackConfigManager tilePackConfigManager, FilterManager filterManager,
-                              Gson gson) {
+    public TilePacksListPanel(TilePackManager tilePackManager,
+                              PointManager pointManager,
+                              TilePackConfigManager tilePackConfigManager,
+                              FilterManager filterManager,
+                              ChatMessageManager chatMessageManager,
+                              Gson gson
+    ) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
         this.tilePackConfigManager = tilePackConfigManager;
         this.filterManager = filterManager;
+        this.chatMessageManager = chatMessageManager;
         this.gson = gson;
 
         headerPanel = new HeaderPanel(filterManager, this);
@@ -87,8 +94,8 @@ public class TilePacksListPanel extends PluginPanel {
             boolean matchesFilters = (filterManager.getShowVisible() && tilePackConfig.visible) || (filterManager.getShowInvisible() && !tilePackConfig.visible);
 
             if (matchesSearch && matchesFilters) {
-                JPanel tile = new TilePackPanel(tilePackManager, pointManager, tilePackConfigManager, gson,
-                        this, tilePack, tilePackConfig);
+                JPanel tile = new TilePackPanel(tilePackManager, pointManager, tilePackConfigManager, chatMessageManager,
+                        gson, this, tilePack, tilePackConfig);
                 listContainer.add(tile);
             }
         }
