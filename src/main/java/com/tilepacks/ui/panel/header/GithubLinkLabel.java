@@ -46,7 +46,7 @@ public class GithubLinkLabel extends JLabel {
     static {
         // Icon is https://www.flaticon.com/free-icon/help-web-button_18436
         // Made by https://www.flaticon.com/authors/freepik
-        final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "question_mark_iron.png");
+        final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "question_mark_icon.png");
         HELP_ICON = new ImageIcon(helpIcon);
         HELP_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));
     }
