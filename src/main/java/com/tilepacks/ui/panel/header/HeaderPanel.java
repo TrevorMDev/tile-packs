@@ -32,6 +32,7 @@ import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -46,9 +47,11 @@ public class HeaderPanel extends JPanel {
     private final TilePacksListPanel tilePacksList;
 
     private final IconTextField searchTextField;
+    private final JPanel bottomPanel = new JPanel();
     private final JPanel filterPanel = new JPanel();
     private final VisibleHeaderLabel visibleListLabel;
     private final InvisibleHeaderLabel invisibleListLabel;
+    private final GithubLinkLabel githubLinkLabel;
 
     public HeaderPanel(FilterManager filterManager, TilePacksListPanel tilePacksList) {
         super();
@@ -65,18 +68,25 @@ public class HeaderPanel extends JPanel {
         searchTextField.setMinimumSize(new Dimension(0, 30));
         searchTextField.addKeyListener(new SearchTextFieldKeyListener());
         searchTextField.addClearListener(() -> tilePacksList.createTilePackPanels());
-        add(searchTextField, BorderLayout.NORTH);
+        add(searchTextField, BorderLayout.CENTER);
 
+        bottomPanel.setLayout(new BorderLayout());
+        bottomPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+        bottomPanel.setBorder(new MatteBorder(1, 0, 0, 0, ColorScheme.DARK_GRAY_COLOR));
+        add(bottomPanel, BorderLayout.SOUTH);
 
         filterPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 4, 6));
         filterPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        filterPanel.setBorder(new MatteBorder(1, 0, 0, 0, ColorScheme.DARK_GRAY_COLOR));
-        add(filterPanel, BorderLayout.SOUTH);
+        bottomPanel.add(filterPanel, BorderLayout.WEST);
 
         visibleListLabel = new VisibleHeaderLabel(filterManager, tilePacksList);
-        filterPanel. add(visibleListLabel);
+        filterPanel.add(visibleListLabel);
         invisibleListLabel = new InvisibleHeaderLabel(filterManager, tilePacksList);
-        filterPanel. add(invisibleListLabel);
+        filterPanel.add(invisibleListLabel);
+
+        githubLinkLabel = new GithubLinkLabel();
+        githubLinkLabel.setBorder(new EmptyBorder(0, 0, 0, 8));
+        bottomPanel.add(githubLinkLabel, BorderLayout.EAST);
     }
 
     public String getSearchText() {
