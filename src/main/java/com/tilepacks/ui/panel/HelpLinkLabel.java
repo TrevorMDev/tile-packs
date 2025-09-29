@@ -27,6 +27,7 @@ package com.tilepacks.ui.panel;
 
 import com.tilepacks.TilePacksPlugin;
 import com.tilepacks.data.TilePack;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.LinkBrowser;
 
@@ -38,9 +39,14 @@ import java.awt.image.BufferedImage;
 /**
  * UI control that handles the opening of help links
  */
+@Slf4j
 public class HelpLinkLabel extends JLabel {
     private static final ImageIcon HELP_ICON;
     private static final ImageIcon HELP_ICON_HOVER;
+    private static final ImageIcon YOUTUBE_ICON;
+    private static final ImageIcon YOUTUBE_ICON_HOVER;
+    private static final ImageIcon DISCORD_ICON;
+    private static final ImageIcon DISCORD_ICON_HOVER;
 
     private final TilePack tilePack;
 
@@ -50,15 +56,33 @@ public class HelpLinkLabel extends JLabel {
         final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "help_icon.png");
         HELP_ICON = new ImageIcon(helpIcon);
         HELP_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));
+
+        final BufferedImage youtubeIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "youtube.png");
+        YOUTUBE_ICON = new ImageIcon(youtubeIcon);
+        YOUTUBE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(youtubeIcon, 0.50f));
+
+        final BufferedImage discordIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "discord.png");
+        DISCORD_ICON = new ImageIcon(discordIcon);
+        DISCORD_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(discordIcon, 0.50f));
     }
 
     HelpLinkLabel(TilePack tilePack) {
         super();
         this.tilePack = tilePack;
 
-        setIcon(HELP_ICON);
+        setIcon(determineIcon(false));
         setToolTipText("Click to open source of pack in browser");
         addMouseListener(new HelpLinkMouseAdapter());
+    }
+
+    private ImageIcon determineIcon(boolean hovering) {
+        log.debug("link - {}, {}, {}", this.tilePack.link, this.tilePack.link.contains("youtube.com"), this.tilePack.link.contains("youtu.be"));
+        if(this.tilePack.link.contains("youtube.com") || this.tilePack.link.contains("youtu.be")) {
+            return hovering ? YOUTUBE_ICON_HOVER : YOUTUBE_ICON;
+        } else if(this.tilePack.link.contains("discord.gg")) {
+            return hovering ? DISCORD_ICON_HOVER : DISCORD_ICON;
+        }
+        return hovering ? HELP_ICON_HOVER : HELP_ICON;
     }
 
     class HelpLinkMouseAdapter extends MouseAdapter {
@@ -71,12 +95,12 @@ public class HelpLinkLabel extends JLabel {
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            setIcon(HELP_ICON_HOVER);
+            setIcon(determineIcon(true));
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            setIcon(HELP_ICON);
+            setIcon(determineIcon(false));
         }
     }
 }
