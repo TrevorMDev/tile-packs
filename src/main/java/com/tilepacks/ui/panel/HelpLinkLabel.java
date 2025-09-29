@@ -39,7 +39,6 @@ import java.awt.image.BufferedImage;
 /**
  * UI control that handles the opening of help links
  */
-@Slf4j
 public class HelpLinkLabel extends JLabel {
     private static final ImageIcon HELP_ICON;
     private static final ImageIcon HELP_ICON_HOVER;
@@ -76,7 +75,6 @@ public class HelpLinkLabel extends JLabel {
     }
 
     private ImageIcon determineIcon(boolean hovering) {
-        log.debug("link - {}, {}, {}", this.tilePack.link, this.tilePack.link.contains("youtube.com"), this.tilePack.link.contains("youtu.be"));
         if(this.tilePack.link.contains("youtube.com") || this.tilePack.link.contains("youtu.be")) {
             return hovering ? YOUTUBE_ICON_HOVER : YOUTUBE_ICON;
         } else if(this.tilePack.link.contains("discord.gg")) {
