@@ -35,10 +35,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.WorldViewLoaded;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.events.ProfileChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -133,15 +135,17 @@ public class TilePacksPlugin extends Plugin {
             }
         }
     }
+    @Subscribe
+    public void onProfileChanged(ProfileChanged profileChanged)
+    {
+        pointManager.loadPoints();
+    }
 
     @Subscribe
-    public void onGameStateChanged(GameStateChanged gameStateChanged) {
-        if (gameStateChanged.getGameState() != GameState.LOGGED_IN) {
-            return;
-        }
-
+    public void onWorldViewLoaded(WorldViewLoaded event) {
+        log.debug("Changing world view");
         // map region has just been updated
-        pointManager.loadPoints();
+        pointManager.loadWorldViewPoints(event.getWorldView());
     }
 
     @Provides

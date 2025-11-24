@@ -27,6 +27,7 @@
 package com.tilepacks.ui.overlay;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Multimap;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.ColorTileMarker;
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
+import net.runelite.api.WorldView;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.ui.overlay.*;
@@ -64,43 +66,50 @@ public class GroundMarkerOverlay extends Overlay {
 
     @Override
     public Dimension render(Graphics2D graphics) {
-        if (pointManager.getPoints().isEmpty()) {
+        final Multimap<WorldView, ColorTileMarker> points = pointManager.getPoints();
+        if (points.isEmpty()) {
             return null;
         }
 
         Stroke stroke = new BasicStroke((float) config.borderWidth());
-        for (final ColorTileMarker point : pointManager.getPoints()) {
-            WorldPoint worldPoint = point.getWorldPoint();
-            if (worldPoint.getPlane() != client.getPlane()) {
-                continue;
-            }
+        for (WorldView worldView : points.keySet()) {
+            for (final ColorTileMarker point : points.get(worldView)) {
+                WorldPoint worldPoint = point.getWorldPoint();
+                if (worldPoint.getPlane() != worldView.getPlane()) {
+                    continue;
+                }
 
-            Color tileColor;
-            if (config.overrideColorActive()) {
-                tileColor = config.overrideColor();
-            } else {
-                tileColor = point.getColor();
-            }
+                Color tileColor;
+                if (config.overrideColorActive()) {
+                    tileColor = config.overrideColor();
+                } else {
+                    tileColor = point.getColor();
+                }
 
-            String label = null;
-            if (config.showLabels()) {
-                label = point.getLabel();
-            }
+                String label = null;
+                if (config.showLabels()) {
+                    label = point.getLabel();
+                }
 
-            drawTile(graphics, worldPoint, tileColor, label, stroke);
+                drawTile(graphics, worldView, worldPoint, tileColor, label, stroke);
+            }
         }
 
         return null;
     }
 
-    private void drawTile(Graphics2D graphics, WorldPoint point, Color color, @Nullable String label, Stroke borderStroke) {
-        WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
+    private void drawTile(Graphics2D graphics, WorldView worldView, WorldPoint point, Color color, @Nullable String label, Stroke borderStroke) {
+        if (client.getLocalPlayer().getWorldView().isTopLevel())
+        {
+            WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
 
-        if (point.distanceTo(playerLocation) >= MAX_DRAW_DISTANCE) {
-            return;
+            if (point.distanceTo(playerLocation) >= MAX_DRAW_DISTANCE)
+            {
+                return;
+            }
         }
 
-        LocalPoint lp = LocalPoint.fromWorld(client, point);
+        LocalPoint lp = LocalPoint.fromWorld(worldView, point);
         if (lp == null) {
             return;
         }

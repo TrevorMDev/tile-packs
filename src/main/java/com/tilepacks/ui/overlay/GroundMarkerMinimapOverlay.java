@@ -25,12 +25,14 @@
  */
 package com.tilepacks.ui.overlay;
 
+import com.google.common.collect.Multimap;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.ColorTileMarker;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
+import net.runelite.api.WorldView;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.ui.overlay.Overlay;
@@ -64,41 +66,42 @@ public class GroundMarkerMinimapOverlay extends Overlay {
         if (!config.drawTilesOnMinimmap()) {
             return null;
         }
+        final Multimap<WorldView, ColorTileMarker> points = pointManager.getPoints();
+        for (WorldView worldView : points.keySet()) {
+            for (final ColorTileMarker point : points.get(worldView)) {
+                WorldPoint worldPoint = point.getWorldPoint();
+                if (worldPoint.getPlane() != worldView.getPlane()) {
+                    continue;
+                }
 
-        for (final ColorTileMarker point : pointManager.getPoints()) {
-            WorldPoint worldPoint = point.getWorldPoint();
-            if (worldPoint.getPlane() != client.getPlane()) {
-                continue;
+                Color tileColor;
+                if (config.overrideColorActive()) {
+                    tileColor = config.overrideColor();
+                } else {
+                    tileColor = point.getColor();
+                }
+
+                drawOnMinimap(graphics, worldView, worldPoint, tileColor);
             }
-
-            Color tileColor;
-            if (config.overrideColorActive()) {
-                tileColor = config.overrideColor();
-            } else {
-                tileColor = point.getColor();
-            }
-
-            drawOnMinimap(graphics, worldPoint, tileColor);
         }
 
         return null;
     }
 
-    private void drawOnMinimap(Graphics2D graphics, WorldPoint point, Color color) {
-        if (!point.isInScene(client)) {
+    private void drawOnMinimap(Graphics2D graphics, WorldView worldView, WorldPoint point, Color color) {
+        LocalPoint localPoint = LocalPoint.fromWorld(worldView, point);
+        if (localPoint == null)
+        {
             return;
         }
 
-        int x = point.getX() - client.getBaseX();
-        int y = point.getY() - client.getBaseY();
+        int x = localPoint.getX() & -Perspective.LOCAL_TILE_SIZE;
+        int y = localPoint.getY() & -Perspective.LOCAL_TILE_SIZE;
 
-        x <<= Perspective.LOCAL_COORD_BITS;
-        y <<= Perspective.LOCAL_COORD_BITS;
-
-        Point mp1 = Perspective.localToMinimap(client, new LocalPoint(x, y));
-        Point mp2 = Perspective.localToMinimap(client, new LocalPoint(x, y + Perspective.LOCAL_TILE_SIZE));
-        Point mp3 = Perspective.localToMinimap(client, new LocalPoint(x + Perspective.LOCAL_TILE_SIZE, y + Perspective.LOCAL_TILE_SIZE));
-        Point mp4 = Perspective.localToMinimap(client, new LocalPoint(x + Perspective.LOCAL_TILE_SIZE, y));
+        Point mp1 = Perspective.localToMinimap(client, new LocalPoint(x, y, worldView.getId()));
+        Point mp2 = Perspective.localToMinimap(client, new LocalPoint(x, y + Perspective.LOCAL_TILE_SIZE, worldView.getId()));
+        Point mp3 = Perspective.localToMinimap(client, new LocalPoint(x + Perspective.LOCAL_TILE_SIZE, y + Perspective.LOCAL_TILE_SIZE, worldView.getId()));
+        Point mp4 = Perspective.localToMinimap(client, new LocalPoint(x + Perspective.LOCAL_TILE_SIZE, y, worldView.getId()));
 
         if (mp1 == null || mp2 == null || mp3 == null || mp4 == null) {
             return;

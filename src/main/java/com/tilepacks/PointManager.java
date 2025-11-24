@@ -24,14 +24,19 @@
  */
 package com.tilepacks;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.tilepacks.data.ColorTileMarker;
 import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.data.TilePack;
+import lombok.Getter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.WorldEntity;
+import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
 
 import javax.inject.Inject;
@@ -45,7 +50,8 @@ import java.util.stream.Collectors;
 @Value
 public class PointManager {
 
-    private List<ColorTileMarker> points = new ArrayList<>();
+    @Getter
+    private ListMultimap<WorldView, ColorTileMarker> points = ArrayListMultimap.create();
 
     private final TilePackManager tilePackManager;
     private final Gson gson;
@@ -62,18 +68,36 @@ public class PointManager {
     public void loadPoints() {
         points.clear();
 
-        int[] regions = client.getMapRegions();
-
-        if (regions == null) {
+        WorldView worldView = client.getTopLevelWorldView();
+        if (worldView == null)
+        {
             return;
         }
 
-        for (int regionId : regions) {
-            Collection<GroundMarkerPoint> regionPoints = getActivePoints(regionId);
-            Collection<ColorTileMarker> colorTileMarkers = translateToColorTileMarker(regionPoints);
-            points.addAll(colorTileMarkers);
+        loadWorldViewPoints(worldView);
+
+        for (WorldEntity we : worldView.worldEntities())
+        {
+            loadWorldViewPoints(we.getWorldView());
         }
-        log.debug("active points - {}",points);
+    }
+
+    public void loadWorldViewPoints(WorldView worldView)
+    {
+        points.removeAll(worldView);
+
+        int[] regions = worldView.getMapRegions();
+        if (regions == null)
+        {
+            return;
+        }
+
+        for (int regionId : regions)
+        {
+            Collection<GroundMarkerPoint> regionPoints = getActivePoints(regionId);
+            Collection<ColorTileMarker> colorTileMarkers = translateToColorTileMarker(worldView, regionPoints);
+            points.putAll(worldView, colorTileMarkers);
+        }
     }
 
     //gets all the active points for all enabled packs.
@@ -104,8 +128,10 @@ public class PointManager {
     }
 
 
-    private Collection<ColorTileMarker> translateToColorTileMarker(Collection<GroundMarkerPoint> points) {
-        if (points.isEmpty()) {
+    private Collection<ColorTileMarker> translateToColorTileMarker(WorldView wv, Collection<GroundMarkerPoint> points)
+    {
+        if (points.isEmpty())
+        {
             return Collections.emptyList();
         }
 
@@ -115,7 +141,7 @@ public class PointManager {
                         point.getColor(), point.getLabel()))
                 .flatMap(colorTile ->
                 {
-                    final Collection<WorldPoint> localWorldPoints = WorldPoint.toLocalInstance(client, colorTile.getWorldPoint());
+                    final Collection<WorldPoint> localWorldPoints = WorldPoint.toLocalInstance(wv, colorTile.getWorldPoint());
                     return localWorldPoints.stream().map(wp -> new ColorTileMarker(wp, colorTile.getColor(), colorTile.getLabel()));
                 })
                 .collect(Collectors.toList());
