@@ -31,7 +31,6 @@ import com.google.common.collect.Multimap;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.ColorTileMarker;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
@@ -60,7 +59,7 @@ public class GroundMarkerOverlay extends Overlay {
         this.client = client;
         this.config = config;
         setPosition(OverlayPosition.DYNAMIC);
-        setPriority(OverlayPriority.LOW);
+        setPriority(PRIORITY_LOW);
         setLayer(OverlayLayer.ABOVE_SCENE);
     }
 

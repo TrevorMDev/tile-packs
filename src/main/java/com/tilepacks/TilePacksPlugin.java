@@ -133,6 +133,8 @@ public class TilePacksPlugin extends Plugin {
                     }
                     break;
             }
+        } else {
+            pointManager.loadPoints();
         }
     }
     @Subscribe

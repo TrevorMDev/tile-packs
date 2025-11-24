@@ -29,6 +29,7 @@ import com.google.common.collect.Multimap;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.ColorTileMarker;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
@@ -38,7 +39,6 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
-import net.runelite.client.ui.overlay.OverlayPriority;
 
 import javax.inject.Inject;
 import java.awt.*;
@@ -46,6 +46,7 @@ import java.awt.*;
 /**
  * Manages the drawing of the markers on the minimap
  */
+@Slf4j
 public class GroundMarkerMinimapOverlay extends Overlay {
     private final PointManager pointManager;
     private final Client client;
@@ -57,7 +58,7 @@ public class GroundMarkerMinimapOverlay extends Overlay {
         this.client = client;
         this.config = config;
         setPosition(OverlayPosition.DYNAMIC);
-        setPriority(OverlayPriority.LOW);
+        setPriority(PRIORITY_LOW);
         setLayer(OverlayLayer.ABOVE_WIDGETS);
     }
 
@@ -66,7 +67,11 @@ public class GroundMarkerMinimapOverlay extends Overlay {
         if (!config.drawTilesOnMinimmap()) {
             return null;
         }
+
         final Multimap<WorldView, ColorTileMarker> points = pointManager.getPoints();
+        if (points.isEmpty()) {
+            return null;
+        }
         for (WorldView worldView : points.keySet()) {
             for (final ColorTileMarker point : points.get(worldView)) {
                 WorldPoint worldPoint = point.getWorldPoint();
