@@ -1,5 +1,14 @@
 # Tile Packs
 
+[![Active Installs](http://img.shields.io/endpoint?url=https://api.runelite.net/pluginhub/shields/installs/plugin/tile-packs)](https://runelite.net/plugin-hub/show/tile-packs)
+[![Plugin Rank](http://img.shields.io/endpoint?url=https://api.runelite.net/pluginhub/shields/rank/plugin/tile-packs)](https://runelite.net/plugin-hub/show/tile-packs)
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/trevormdev)
+
+[Tile Packs Discord](https://discord.gg/4EQRWxY3Wb)
+
+---
+
 This plugin serves as a collection of tile packs you can add and remove quickly and easily, for content all over the game.
 
 These tiles do not interfere with the ground markers plugin, they are saved separately.
@@ -50,12 +59,6 @@ The tiles are formatted to be compatible with ground marker tiles.
 You can import ground marker tiles by right clicking the minimap icon and choosing __Export ground markers__.
 This will copy all loaded(in your render distance) ground markers to your clipboard.
 If you get a formatting error, or want to edit the copied tiles, checkout the tool on https://runelite.net/tile/
-
----
-
-[Tile Packs Discord](https://discord.gg/4EQRWxY3Wb)
-
-[Buy me a Coffee](https://buymeacoffee.com/trevormdev)
 
 ---
 ## Credits
