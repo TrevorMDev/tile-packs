@@ -23,82 +23,77 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks.ui.panel;
+package com.tilepacks.ui.panel.pack.actions;
 
+import com.google.gson.Gson;
 import com.tilepacks.TilePacksPlugin;
 import com.tilepacks.data.TilePack;
-import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.util.ImageUtil;
-import net.runelite.client.util.LinkBrowser;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 /**
- * UI control that handles the opening of help links
+ * UI control that handles copying the tiles of a pack to the clipboard
  */
-public class HelpLinkLabel extends JLabel {
-    private static final ImageIcon HELP_ICON;
-    private static final ImageIcon HELP_ICON_HOVER;
-    private static final ImageIcon YOUTUBE_ICON;
-    private static final ImageIcon YOUTUBE_ICON_HOVER;
-    private static final ImageIcon DISCORD_ICON;
-    private static final ImageIcon DISCORD_ICON_HOVER;
+public class CopyToClipboardLabel extends JLabel {
+    private static final ImageIcon COPY_ICON;
+    private static final ImageIcon COPY_ICON_HOVER;
 
+    private final ChatMessageManager chatMessageManager;
+    private final Gson gson;
     private final TilePack tilePack;
 
     static {
-        // Icon is https://www.flaticon.com/free-icon/resize_3388930
+        // Icon is https://www.flaticon.com/free-icon/close_1828665
         // Made by https://www.flaticon.com/authors/pixel-perfect
-        final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "help_icon.png");
-        HELP_ICON = new ImageIcon(helpIcon);
-        HELP_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));
-
-        final BufferedImage youtubeIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "youtube.png");
-        YOUTUBE_ICON = new ImageIcon(youtubeIcon);
-        YOUTUBE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(youtubeIcon, 0.50f));
-
-        final BufferedImage discordIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "discord.png");
-        DISCORD_ICON = new ImageIcon(discordIcon);
-        DISCORD_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(discordIcon, 0.50f));
+        final BufferedImage copyIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "copy_icon.png");
+        COPY_ICON = new ImageIcon(copyIcon);
+        COPY_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(copyIcon, 0.50f));
     }
 
-    HelpLinkLabel(TilePack tilePack) {
+    public CopyToClipboardLabel(ChatMessageManager chatMessageManager, Gson gson, TilePack tilePack) {
         super();
+        this.chatMessageManager = chatMessageManager;
+        this.gson = gson;
         this.tilePack = tilePack;
 
-        setIcon(determineIcon(false));
-        setToolTipText("Click to open source of pack in browser");
-        addMouseListener(new HelpLinkMouseAdapter());
+        setIcon(COPY_ICON);
+        setToolTipText("Copy tiles of pack to clipboard");
+        addMouseListener(new CopyToClipboardMouseAdapter());
     }
 
-    private ImageIcon determineIcon(boolean hovering) {
-        if(this.tilePack.link.contains("youtube.com") || this.tilePack.link.contains("youtu.be")) {
-            return hovering ? YOUTUBE_ICON_HOVER : YOUTUBE_ICON;
-        } else if(this.tilePack.link.contains("discord.gg")) {
-            return hovering ? DISCORD_ICON_HOVER : DISCORD_ICON;
-        }
-        return hovering ? HELP_ICON_HOVER : HELP_ICON;
-    }
-
-    class HelpLinkMouseAdapter extends MouseAdapter {
+    class CopyToClipboardMouseAdapter extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
-                LinkBrowser.browse(tilePack.link);
+                final String copy = tilePack.packTiles;
+
+                Toolkit.getDefaultToolkit()
+                        .getSystemClipboard()
+                        .setContents(new StringSelection(copy), null);
+                chatMessageManager.queue(QueuedMessage.builder()
+                        .type(ChatMessageType.CONSOLE)
+                        .runeLiteFormattedMessage(tilePack.packName + " tiles copied to clipboard")
+                        .build());
             }
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            setIcon(determineIcon(true));
+            setIcon(COPY_ICON_HOVER);
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            setIcon(determineIcon(false));
+            setIcon(COPY_ICON);
         }
     }
 }
