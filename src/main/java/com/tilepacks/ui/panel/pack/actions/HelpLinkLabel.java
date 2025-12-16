@@ -23,13 +23,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks.ui.panel;
+package com.tilepacks.ui.panel.pack.actions;
 
-import com.tilepacks.PointManager;
-import com.tilepacks.TilePackManager;
 import com.tilepacks.TilePacksPlugin;
 import com.tilepacks.data.TilePack;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.LinkBrowser;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
@@ -37,68 +36,68 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 /**
- * UI control that handles the deletion of custom packs
+ * UI control that handles the opening of help links
  */
-public class DeleteCustomPackLabel extends JLabel {
-    private static final ImageIcon DELETE_ICON;
-    private static final ImageIcon DELETE_ICON_HOVER;
+public class HelpLinkLabel extends JLabel {
+    private static final ImageIcon HELP_ICON;
+    private static final ImageIcon HELP_ICON_HOVER;
+    private static final ImageIcon YOUTUBE_ICON;
+    private static final ImageIcon YOUTUBE_ICON_HOVER;
+    private static final ImageIcon DISCORD_ICON;
+    private static final ImageIcon DISCORD_ICON_HOVER;
 
-    private final TilePackManager tilePackManager;
-    private final PointManager pointManager;
     private final TilePack tilePack;
-    private final TilePacksListPanel tilePacksList;
 
     static {
-        // Icon is https://www.flaticon.com/free-icon/close_1828665
+        // Icon is https://www.flaticon.com/free-icon/resize_3388930
         // Made by https://www.flaticon.com/authors/pixel-perfect
-        final BufferedImage deleteIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "delete_icon.png");
-        DELETE_ICON = new ImageIcon(deleteIcon);
-        DELETE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(deleteIcon, 0.50f));
+        final BufferedImage helpIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "help_icon.png");
+        HELP_ICON = new ImageIcon(helpIcon);
+        HELP_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(helpIcon, 0.50f));
+
+        final BufferedImage youtubeIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "youtube.png");
+        YOUTUBE_ICON = new ImageIcon(youtubeIcon);
+        YOUTUBE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(youtubeIcon, 0.50f));
+
+        final BufferedImage discordIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "discord.png");
+        DISCORD_ICON = new ImageIcon(discordIcon);
+        DISCORD_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(discordIcon, 0.50f));
     }
 
-    DeleteCustomPackLabel(TilePackManager tilePackManager, PointManager pointManager, TilePack tilePack, TilePacksListPanel tilePacksList) {
+    public HelpLinkLabel(TilePack tilePack) {
         super();
-        this.tilePackManager = tilePackManager;
-        this.pointManager = pointManager;
         this.tilePack = tilePack;
-        this.tilePacksList = tilePacksList;
 
-        setIcon(DELETE_ICON);
-        setToolTipText("Delete this custom pack, this is permanent");
-        addMouseListener(new DeleteCustomPackMouseAdapter(this));
+        setIcon(determineIcon(false));
+        setToolTipText("Click to open source of pack in browser");
+        addMouseListener(new HelpLinkMouseAdapter());
     }
 
-    class DeleteCustomPackMouseAdapter extends MouseAdapter {
-        private final DeleteCustomPackLabel deleteCustomPackLabel;
-
-        DeleteCustomPackMouseAdapter(DeleteCustomPackLabel deleteCustomPackLabel) {
-            this.deleteCustomPackLabel = deleteCustomPackLabel;
+    private ImageIcon determineIcon(boolean hovering) {
+        if(this.tilePack.link.contains("youtube.com") || this.tilePack.link.contains("youtu.be")) {
+            return hovering ? YOUTUBE_ICON_HOVER : YOUTUBE_ICON;
+        } else if(this.tilePack.link.contains("discord.gg")) {
+            return hovering ? DISCORD_ICON_HOVER : DISCORD_ICON;
         }
+        return hovering ? HELP_ICON_HOVER : HELP_ICON;
+    }
 
+    class HelpLinkMouseAdapter extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
-                final int result = JOptionPane.showOptionDialog(deleteCustomPackLabel,
-                        "Are you sure you want to delete this pack?",
-                        "Delete Pack?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-                        null, new String[]{"Yes", "No"}, "No");
-
-                if (result == JOptionPane.YES_OPTION) {
-                    tilePackManager.removeCustomPack(tilePack.id);
-                    pointManager.loadPoints();
-                    tilePacksList.createTilePackPanels();
-                }
+                LinkBrowser.browse(tilePack.link);
             }
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            setIcon(DELETE_ICON_HOVER);
+            setIcon(determineIcon(true));
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            setIcon(DELETE_ICON);
+            setIcon(determineIcon(false));
         }
     }
 }
