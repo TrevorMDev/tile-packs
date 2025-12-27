@@ -1,5 +1,5 @@
 //this file is sorted by bosses/non-pvm, and then alphabetically. So the ids are in a fairly random order based on when they were added.
-//next id: 80
+//next id: 84
 //there are some removed ids, so not all numbers exist.
 {
 //  PVM
@@ -193,6 +193,11 @@
     "id": 40,
     "packName": "Skeletal Wyvern safespots",
     "packTiles": "[{\"regionId\":12181,\"regionX\":54,\"regionY\":3,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap north\"},{\"regionId\":12181,\"regionX\":49,\"regionY\":8,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap east\"},{\"regionId\":12181,\"regionX\":47,\"regionY\":6,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap north east\"},{\"regionId\":12181,\"regionX\":45,\"regionY\":8,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap north\"},{\"regionId\":12181,\"regionX\":44,\"regionY\":8,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap east\"},{\"regionId\":12181,\"regionX\":51,\"regionY\":18,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap west\"},{\"regionId\":12181,\"regionX\":47,\"regionY\":18,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap east\"},{\"regionId\":12181,\"regionX\":45,\"regionY\":15,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap south\"},{\"regionId\":12181,\"regionX\":49,\"regionY\":23,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap west\"},{\"regionId\":12181,\"regionX\":54,\"regionY\":15,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap south east\"},{\"regionId\":12181,\"regionX\":54,\"regionY\":16,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"trap south west\"}]"
+  },
+  "83": {
+    "id": 83,
+    "packName": "Pest Control",
+    "packTiles": "[{\"regionId\":10536,\"regionX\":7,\"regionY\":32,\"z\":0,\"color\":\"#FF00FF13\",\"label\":\"ranged\"},{\"regionId\":10536,\"regionX\":55,\"regionY\":29,\"z\":0,\"color\":\"#FF8D8DFF\",\"label\":\"magic\"},{\"regionId\":10536,\"regionX\":46,\"regionY\":13,\"z\":0,\"color\":\"#FFFF6868\",\"label\":\"stab/slash\"},{\"regionId\":10536,\"regionX\":22,\"regionY\":12,\"z\":0,\"color\":\"#FFFF6868\",\"label\":\"crush\"}]"
   },
   "45": {
     "id": 45,
