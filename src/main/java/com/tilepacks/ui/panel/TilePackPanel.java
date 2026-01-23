@@ -24,7 +24,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks.ui.panel.pack;
+package com.tilepacks.ui.panel;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
@@ -33,8 +33,6 @@ import com.tilepacks.TilePackConfigManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
-import com.tilepacks.ui.panel.*;
-import com.tilepacks.ui.panel.pack.actions.*;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.ui.ColorScheme;
@@ -78,7 +76,7 @@ public class TilePackPanel extends JPanel {
     private final JLabel helpLink;
     private final JLabel togglePack;
 
-    public TilePackPanel(TilePackManager tilePackManager,
+    TilePackPanel(TilePackManager tilePackManager,
                   PointManager pointManager,
                   TilePackConfigManager tilePackConfigManager,
                   ChatMessageManager chatMessageManager,

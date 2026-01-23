@@ -23,7 +23,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks.ui.panel.pack.actions;
+package com.tilepacks.ui.panel;
 
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
@@ -62,7 +62,7 @@ public class TogglePackLabel extends JLabel {
         REMOVE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.50f));
     }
 
-    public TogglePackLabel(TilePackManager tilePackManager, PointManager pointManager, TilePack tilePack) {
+    TogglePackLabel(TilePackManager tilePackManager, PointManager pointManager, TilePack tilePack) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;

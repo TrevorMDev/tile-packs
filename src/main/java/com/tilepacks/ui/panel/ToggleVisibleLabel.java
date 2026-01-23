@@ -23,14 +23,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks.ui.panel.pack.actions;
+package com.tilepacks.ui.panel;
 
 import com.tilepacks.TilePackConfigManager;
 import com.tilepacks.TilePacksPlugin;
 import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
-import com.tilepacks.ui.panel.TilePacksListPanel;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.LinkBrowser;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
@@ -66,7 +66,7 @@ public class ToggleVisibleLabel extends JLabel {
         INVISIBLE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(invisibleIcon, 0.50f));
     }
 
-    public ToggleVisibleLabel(TilePackConfigManager tilePackConfigManager,
+    ToggleVisibleLabel(TilePackConfigManager tilePackConfigManager,
                        TilePack tilePack,
                        TilePackConfig tilePackConfig,
                        TilePacksListPanel tilePacksList) {

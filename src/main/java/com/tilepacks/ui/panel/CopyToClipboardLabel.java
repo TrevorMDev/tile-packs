@@ -23,83 +23,77 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tilepacks.ui.panel.pack.actions;
+package com.tilepacks.ui.panel;
 
-import com.tilepacks.PointManager;
-import com.tilepacks.TilePackManager;
+import com.google.gson.Gson;
 import com.tilepacks.TilePacksPlugin;
 import com.tilepacks.data.TilePack;
-import com.tilepacks.ui.panel.TilePacksListPanel;
+import net.runelite.api.ChatMessageType;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.util.ImageUtil;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 /**
- * UI control that handles the deletion of custom packs
+ * UI control that handles copying the tiles of a pack to the clipboard
  */
-public class DeleteCustomPackLabel extends JLabel {
-    private static final ImageIcon DELETE_ICON;
-    private static final ImageIcon DELETE_ICON_HOVER;
+public class CopyToClipboardLabel extends JLabel {
+    private static final ImageIcon COPY_ICON;
+    private static final ImageIcon COPY_ICON_HOVER;
 
-    private final TilePackManager tilePackManager;
-    private final PointManager pointManager;
+    private final ChatMessageManager chatMessageManager;
+    private final Gson gson;
     private final TilePack tilePack;
-    private final TilePacksListPanel tilePacksList;
 
     static {
         // Icon is https://www.flaticon.com/free-icon/close_1828665
         // Made by https://www.flaticon.com/authors/pixel-perfect
-        final BufferedImage deleteIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "delete_icon.png");
-        DELETE_ICON = new ImageIcon(deleteIcon);
-        DELETE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(deleteIcon, 0.50f));
+        final BufferedImage copyIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "copy_icon.png");
+        COPY_ICON = new ImageIcon(copyIcon);
+        COPY_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(copyIcon, 0.50f));
     }
 
-    public DeleteCustomPackLabel(TilePackManager tilePackManager, PointManager pointManager, TilePack tilePack, TilePacksListPanel tilePacksList) {
+    CopyToClipboardLabel(ChatMessageManager chatMessageManager, Gson gson, TilePack tilePack) {
         super();
-        this.tilePackManager = tilePackManager;
-        this.pointManager = pointManager;
+        this.chatMessageManager = chatMessageManager;
+        this.gson = gson;
         this.tilePack = tilePack;
-        this.tilePacksList = tilePacksList;
 
-        setIcon(DELETE_ICON);
-        setToolTipText("Delete this custom pack, this is permanent");
-        addMouseListener(new DeleteCustomPackMouseAdapter(this));
+        setIcon(COPY_ICON);
+        setToolTipText("Copy tiles of pack to clipboard");
+        addMouseListener(new CopyToClipboardMouseAdapter());
     }
 
-    class DeleteCustomPackMouseAdapter extends MouseAdapter {
-        private final DeleteCustomPackLabel deleteCustomPackLabel;
-
-        DeleteCustomPackMouseAdapter(DeleteCustomPackLabel deleteCustomPackLabel) {
-            this.deleteCustomPackLabel = deleteCustomPackLabel;
-        }
-
+    class CopyToClipboardMouseAdapter extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
-                final int result = JOptionPane.showOptionDialog(deleteCustomPackLabel,
-                        "Are you sure you want to delete this pack?",
-                        "Delete Pack?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-                        null, new String[]{"Yes", "No"}, "No");
+                final String copy = tilePack.packTiles;
 
-                if (result == JOptionPane.YES_OPTION) {
-                    tilePackManager.removeCustomPack(tilePack.id);
-                    pointManager.loadPoints();
-                    tilePacksList.createTilePackPanels();
-                }
+                Toolkit.getDefaultToolkit()
+                        .getSystemClipboard()
+                        .setContents(new StringSelection(copy), null);
+                chatMessageManager.queue(QueuedMessage.builder()
+                        .type(ChatMessageType.CONSOLE)
+                        .runeLiteFormattedMessage(tilePack.packName + " tiles copied to clipboard")
+                        .build());
             }
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            setIcon(DELETE_ICON_HOVER);
+            setIcon(COPY_ICON_HOVER);
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            setIcon(DELETE_ICON);
+            setIcon(COPY_ICON);
         }
     }
 }

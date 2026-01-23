@@ -33,9 +33,7 @@ import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
-import com.tilepacks.ui.panel.custom.CustomPackManagerPanel;
 import com.tilepacks.ui.panel.header.HeaderPanel;
-import com.tilepacks.ui.panel.pack.TilePackPanel;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.ui.PluginPanel;
 
