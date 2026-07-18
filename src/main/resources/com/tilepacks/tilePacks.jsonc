@@ -6,6 +6,7 @@
   "1": {
     "id": 1,
     "packName": "Abyssal Sire",
+    "link": "https://www.youtube.com/watch?v=9p9ft1fGFng",
     "packTiles": "[{\"regionId\":11850,\"regionX\":27,\"regionY\":44,\"z\":0,\"color\":\"#FFFFFF00\"},{\"regionId\":11850,\"regionX\":25,\"regionY\":44,\"z\":0,\"color\":\"#FFFFFF00\"},{\"regionId\":11850,\"regionX\":27,\"regionY\":36,\"z\":0,\"color\":\"#FFFFFF00\"},{\"regionId\":11850,\"regionX\":25,\"regionY\":36,\"z\":0,\"color\":\"#FFFFFF00\"},{\"regionId\":11850,\"regionX\":27,\"regionY\":34,\"z\":0,\"color\":\"#FFFFFF00\"},{\"regionId\":11850,\"regionX\":25,\"regionY\":34,\"z\":0,\"color\":\"#FFFFFF00\"},{\"regionId\":12362,\"regionX\":37,\"regionY\":44,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12362,\"regionX\":39,\"regionY\":44,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12362,\"regionX\":39,\"regionY\":36,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12362,\"regionX\":37,\"regionY\":36,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12362,\"regionX\":37,\"regionY\":34,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12362,\"regionX\":39,\"regionY\":34,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12363,\"regionX\":32,\"regionY\":44,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12363,\"regionX\":34,\"regionY\":44,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12363,\"regionX\":34,\"regionY\":36,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12363,\"regionX\":32,\"regionY\":36,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12363,\"regionX\":32,\"regionY\":34,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":12363,\"regionX\":34,\"regionY\":34,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":11851,\"regionX\":35,\"regionY\":44,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":11851,\"regionX\":37,\"regionY\":44,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":11851,\"regionX\":37,\"regionY\":36,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":11851,\"regionX\":35,\"regionY\":36,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":11851,\"regionX\":35,\"regionY\":34,\"z\":0,\"color\":\"#FFF1FF00\"},{\"regionId\":11851,\"regionX\":37,\"regionY\":34,\"z\":0,\"color\":\"#FFF1FF00\"}]"
   },
   "3": {
@@ -16,6 +17,7 @@
   "47": {
     "id": 47,
     "packName": "Alchemical Hydra (melee)",
+    "link": "https://youtu.be/_PSdH0KcDHc",
     "packTiles": "[{\"regionId\":5536,\"regionX\":33,\"regionY\":23,\"z\":0,\"color\":\"#FF24FA3D\",\"label\":\"Start\"},{\"regionId\":5536,\"regionX\":27,\"regionY\":38,\"z\":0,\"color\":\"#FF004DFF\",\"label\":\"1\"},{\"regionId\":5536,\"regionX\":17,\"regionY\":30,\"z\":0,\"color\":\"#FFFFFFFF\",\"label\":\"4th attack\"},{\"regionId\":5536,\"regionX\":12,\"regionY\":27,\"z\":0,\"color\":\"#FFFF8700\",\"label\":\"Skip when fire hits wall\"},{\"regionId\":5536,\"regionX\":20,\"regionY\":31,\"z\":0,\"color\":\"#FFFF2121\",\"label\":\"2, center\"},{\"regionId\":5536,\"regionX\":19,\"regionY\":30,\"z\":0,\"color\":\"#FFFF2121\",\"label\":\"3, skip\"},{\"regionId\":5536,\"regionX\":16,\"regionY\":34,\"z\":0,\"color\":\"#FFFF2121\",\"label\":\"1\"},{\"regionId\":5536,\"regionX\":30,\"regionY\":23,\"z\":0,\"color\":\"#FF24FA3D\",\"label\":\"2\"},{\"regionId\":5536,\"regionX\":29,\"regionY\":29,\"z\":0,\"color\":\"#FF24FA3D\",\"label\":\"3, 4th attack\"},{\"regionId\":5536,\"regionX\":31,\"regionY\":35,\"z\":0,\"color\":\"#FF3941FF\",\"label\":\"2\"},{\"regionId\":5536,\"regionX\":31,\"regionY\":38,\"z\":0,\"color\":\"#FF004DFF\",\"label\":\"3, 4th attack\"},{\"regionId\":5536,\"regionX\":14,\"regionY\":38,\"z\":0,\"color\":\"#FF004DFF\",\"label\":\"4\"},{\"regionId\":5536,\"regionX\":13,\"regionY\":32,\"z\":0,\"color\":\"#FF3941FF\",\"label\":\"5\"}]"
   },
   "51": {
@@ -197,6 +199,7 @@
   "45": {
     "id": 45,
     "packName": "Smoke Devils",
+    "link": "https://youtu.be/y4XkYSVplK0",
     "packTiles": "[{\"regionId\":9619,\"regionX\":35,\"regionY\":43,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"1\"},{\"regionId\":9619,\"regionX\":34,\"regionY\":33,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"2\"},{\"regionId\":9619,\"regionX\":34,\"regionY\":36,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"Cannon\"},{\"regionId\":9619,\"regionX\":34,\"regionY\":35,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"Smokes here\"},{\"regionId\":9619,\"regionX\":35,\"regionY\":34,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"3/barrage\"},{\"regionId\":9619,\"regionX\":35,\"regionY\":35,\"z\":0,\"color\":\"#FFF1FF00\",\"label\":\"3.5\"}]"
   },
   "2": {
