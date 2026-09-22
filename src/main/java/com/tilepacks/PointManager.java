@@ -55,7 +55,7 @@ public class PointManager {
     private ListMultimap<WorldView, ColorTileMarker> points = ArrayListMultimap.create();
 
     @NonFinal
-    private List<GroundMarkerPoint> activePoints;
+    private Map<Integer, List<GroundMarkerPoint>> activePointsByRegion;
 
     private final TilePackManager tilePackManager;
     private final Gson gson;
@@ -71,7 +71,7 @@ public class PointManager {
     //loads the points from the packs for the players active regions
     public void loadPoints() {
         points.clear();
-        activePoints = null;
+        activePointsByRegion = null;
 
         WorldView worldView = client.getTopLevelWorldView();
         if (worldView == null)
@@ -105,33 +105,31 @@ public class PointManager {
         }
     }
 
-    //gets all the active points for all enabled packs.
-    private List<GroundMarkerPoint> getActivePoints() {
-        if (activePoints != null)
+    //gets the active points for a region, loading and indexing all enabled packs once.
+    private List<GroundMarkerPoint> getActivePoints(int regionId) {
+        if (activePointsByRegion == null)
         {
-            return activePoints;
-        }
+            activePointsByRegion = new HashMap<>();
+            Set<Integer> enabledPacks = new HashSet<>(tilePackManager.getEnabledPacks());
+            for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet()) {
+                if (!enabledPacks.contains(pack.getKey())) {
+                    continue;
+                }
 
-        List<GroundMarkerPoint> markers = new ArrayList<>();
-        List<Integer> enabledPacks = tilePackManager.getEnabledPacks();
-        for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet()) {
-            if (enabledPacks.contains(pack.getKey())) {
-                markers.addAll(gson.fromJson(
+                List<GroundMarkerPoint> markers = gson.fromJson(
                         pack.getValue().packTiles,
                         new TypeToken<List<GroundMarkerPoint>>() {
-                        }.getType()));
+                        }.getType());
+                for (GroundMarkerPoint marker : markers)
+                {
+                    activePointsByRegion
+                            .computeIfAbsent(marker.getRegionId(), key -> new ArrayList<>())
+                            .add(marker);
+                }
             }
         }
-        activePoints = markers;
-        return activePoints;
-    }
 
-    //gets all the active points, filtered for a region
-    private List<GroundMarkerPoint> getActivePoints(int regionId) {
-        List<GroundMarkerPoint> activePoints = getActivePoints();
-        Map<Integer, List<GroundMarkerPoint>> regionGroupedPoints = activePoints.stream()
-                .collect(Collectors.groupingBy(GroundMarkerPoint::getRegionId));
-        List<GroundMarkerPoint> regionPoints = regionGroupedPoints.get(regionId);
+        List<GroundMarkerPoint> regionPoints = activePointsByRegion.get(regionId);
         if (regionPoints == null) {
             return Collections.emptyList();
         }
