@@ -137,6 +137,7 @@ public class TilePacksPlugin extends Plugin {
             pointManager.loadPoints();
         }
     }
+
     @Subscribe
     public void onProfileChanged(ProfileChanged profileChanged)
     {

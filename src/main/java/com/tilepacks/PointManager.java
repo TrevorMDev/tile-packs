@@ -33,6 +33,7 @@ import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.data.TilePack;
 import lombok.Getter;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.WorldEntity;
@@ -53,6 +54,9 @@ public class PointManager {
     @Getter
     private ListMultimap<WorldView, ColorTileMarker> points = ArrayListMultimap.create();
 
+    @NonFinal
+    private List<GroundMarkerPoint> activePoints;
+
     private final TilePackManager tilePackManager;
     private final Gson gson;
     private final Client client;
@@ -67,6 +71,7 @@ public class PointManager {
     //loads the points from the packs for the players active regions
     public void loadPoints() {
         points.clear();
+        activePoints = null;
 
         WorldView worldView = client.getTopLevelWorldView();
         if (worldView == null)
@@ -102,6 +107,11 @@ public class PointManager {
 
     //gets all the active points for all enabled packs.
     private List<GroundMarkerPoint> getActivePoints() {
+        if (activePoints != null)
+        {
+            return activePoints;
+        }
+
         List<GroundMarkerPoint> markers = new ArrayList<>();
         List<Integer> enabledPacks = tilePackManager.getEnabledPacks();
         for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet()) {
@@ -112,7 +122,8 @@ public class PointManager {
                         }.getType()));
             }
         }
-        return markers;
+        activePoints = markers;
+        return activePoints;
     }
 
     //gets all the active points, filtered for a region
