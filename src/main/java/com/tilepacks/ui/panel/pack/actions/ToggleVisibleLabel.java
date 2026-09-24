@@ -25,9 +25,8 @@
 
 package com.tilepacks.ui.panel.pack.actions;
 
-import com.tilepacks.TilePackConfigManager;
+import com.tilepacks.TilePackManager;
 import com.tilepacks.TilePacksPlugin;
-import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
 import com.tilepacks.ui.panel.TilePacksListPanel;
 import net.runelite.client.util.ImageUtil;
@@ -46,10 +45,9 @@ public class ToggleVisibleLabel extends JLabel {
     private static final ImageIcon INVISIBLE_ICON;
     private static final ImageIcon INVISIBLE_ICON_HOVER;
 
-    private final TilePackConfigManager tilePackConfigManager;
+    private final TilePackManager tilePackManager;
 
     private final TilePack tilePack;
-    private final TilePackConfig tilePackConfig;
     private final TilePacksListPanel tilePacksList;
 
     static {
@@ -66,17 +64,15 @@ public class ToggleVisibleLabel extends JLabel {
         INVISIBLE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(invisibleIcon, 0.50f));
     }
 
-    public ToggleVisibleLabel(TilePackConfigManager tilePackConfigManager,
-                       TilePack tilePack,
-                       TilePackConfig tilePackConfig,
-                       TilePacksListPanel tilePacksList) {
+    public ToggleVisibleLabel(TilePackManager tilePackManager,
+                              TilePack tilePack,
+                              TilePacksListPanel tilePacksList) {
         super();
-        this.tilePackConfigManager = tilePackConfigManager;
+        this.tilePackManager = tilePackManager;
         this.tilePack = tilePack;
-        this.tilePackConfig = tilePackConfig;
         this.tilePacksList = tilePacksList;
 
-        if(tilePackConfig.visible) {
+        if (tilePack.visible) {
             setIcon(VISIBLE_ICON);
             setToolTipText("Hide pack from list without deleting");
         } else {
@@ -91,22 +87,22 @@ public class ToggleVisibleLabel extends JLabel {
         @Override
         public void mousePressed(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
-                tilePackConfig.visible = !tilePackConfig.visible;
-                if(tilePackConfig.visible) {
+                tilePack.visible = !tilePack.visible;
+                if (tilePack.visible) {
                     setIcon(VISIBLE_ICON);
                     setToolTipText("Hide pack from list without deleting");
                 } else {
                     setIcon(INVISIBLE_ICON);
                     setToolTipText("Show tile pack in main list");
                 }
-                tilePackConfigManager.updateTilePackConfig(tilePackConfig);
+                tilePackManager.updatePack(tilePack);
                 tilePacksList.createTilePackPanels();
             }
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            if(tilePackConfig.visible) {
+            if (tilePack.visible) {
                 setIcon(VISIBLE_ICON_HOVER);
             } else {
                 setIcon(INVISIBLE_ICON_HOVER);
@@ -115,7 +111,7 @@ public class ToggleVisibleLabel extends JLabel {
 
         @Override
         public void mouseExited(MouseEvent e) {
-            if(tilePackConfig.visible) {
+            if (tilePack.visible) {
                 setIcon(VISIBLE_ICON);
             } else {
                 setIcon(INVISIBLE_ICON);

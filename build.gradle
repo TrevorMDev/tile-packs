@@ -26,8 +26,8 @@ dependencies {
 
 group = 'com.tilepacks'
 version = '1.0-SNAPSHOT'
-sourceCompatibility = '1.8'
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
+	options.release.set(11)
 }

@@ -28,10 +28,8 @@ package com.tilepacks.ui.panel;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.tilepacks.FilterManager;
-import com.tilepacks.TilePackConfigManager;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
-import com.tilepacks.data.TilePackConfig;
 import com.tilepacks.data.TilePack;
 import com.tilepacks.ui.panel.custom.CustomPackManagerPanel;
 import com.tilepacks.ui.panel.header.HeaderPanel;
@@ -50,7 +48,6 @@ public class TilePacksListPanel extends PluginPanel {
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
-    private final TilePackConfigManager tilePackConfigManager;
     private final FilterManager filterManager;
     private final ChatMessageManager chatMessageManager;
     private final Gson gson;
@@ -60,7 +57,6 @@ public class TilePacksListPanel extends PluginPanel {
 
     public TilePacksListPanel(TilePackManager tilePackManager,
                               PointManager pointManager,
-                              TilePackConfigManager tilePackConfigManager,
                               FilterManager filterManager,
                               ChatMessageManager chatMessageManager,
                               Gson gson
@@ -68,7 +64,6 @@ public class TilePacksListPanel extends PluginPanel {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
-        this.tilePackConfigManager = tilePackConfigManager;
         this.filterManager = filterManager;
         this.chatMessageManager = chatMessageManager;
         this.gson = gson;
@@ -91,13 +86,12 @@ public class TilePacksListPanel extends PluginPanel {
         String search = headerPanel.getSearchText();
         for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet()) {
             TilePack tilePack = pack.getValue();
-            TilePackConfig tilePackConfig = tilePackConfigManager.getTilePackConfig(tilePack.id);
             boolean matchesSearch = Strings.isNullOrEmpty(search) || tilePack.packName.toLowerCase().contains(search.toLowerCase());
-            boolean matchesFilters = (filterManager.getShowVisible() && tilePackConfig.visible) || (filterManager.getShowInvisible() && !tilePackConfig.visible);
+            boolean matchesFilters = (filterManager.getShowVisible() && tilePack.visible) || (filterManager.getShowInvisible() && !tilePack.visible);
 
             if (matchesSearch && matchesFilters) {
-                JPanel tile = new TilePackPanel(tilePackManager, pointManager, tilePackConfigManager, chatMessageManager,
-                        gson, this, tilePack, tilePackConfig);
+                JPanel tile = new TilePackPanel(tilePackManager, pointManager, chatMessageManager,
+                        gson, this, tilePack);
                 listContainer.add(tile);
             }
         }

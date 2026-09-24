@@ -32,6 +32,10 @@ public class TilePack {
     public String packName;
     public String link;
     public String packTiles;
+    public boolean visible = true;
+
+    public TilePack() {
+    }
 
     public TilePack(Integer id, String packName, String packTiles) {
         this.id = id;
@@ -44,5 +48,10 @@ public class TilePack {
         this.packName = packName;
         this.link = link;
         this.packTiles = packTiles;
+    }
+
+    public TilePack(Integer id, boolean visible) {
+        this.id = id;
+        this.visible = visible;
     }
 }

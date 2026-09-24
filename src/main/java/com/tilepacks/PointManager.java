@@ -106,7 +106,7 @@ public class PointManager {
     }
 
     //gets the active points for a region, loading and indexing all enabled packs once.
-    private List<GroundMarkerPoint> getActivePoints(int regionId) {
+    List<GroundMarkerPoint> getActivePoints(int regionId) {
         if (activePointsByRegion == null)
         {
             activePointsByRegion = new HashMap<>();

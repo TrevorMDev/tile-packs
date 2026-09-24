@@ -34,9 +34,11 @@ import com.tilepacks.ui.panel.TilePacksListPanel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.WorldViewLoaded;
 import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -75,23 +77,32 @@ public class TilePacksPlugin extends Plugin {
     private GroundMarkerOverlay overlay;
     private TilePackManager tilePackManager;
     private PointManager pointManager;
-    private TilePackConfigManager tilePackConfigManager;
     private FilterManager filterManager;
     private TilePacksListPanel panel;
     private NavigationButton navButton;
 
     @Override
     protected void startUp() throws Exception {
+        try {
+            new TilePackMigrations(gson, configManager).migrateToLatest();
+        } catch (Exception e) {
+            log.error("Unable to migrate Tile Packs configuration", e);
+            chatMessageManager.queue(QueuedMessage.builder()
+                    .type(ChatMessageType.CONSOLE)
+                    .runeLiteFormattedMessage("Tile Packs failed to migrate to latest version. Please report this issue.")
+                    .build());
+            return;
+        }
+
         tilePackManager = new TilePackManager(gson, configManager);
         pointManager = new PointManager(tilePackManager, gson, client);
-        tilePackConfigManager = new TilePackConfigManager(gson, configManager);
         filterManager = new FilterManager(configManager);
 
         overlay = new GroundMarkerOverlay(pointManager, client, config);
         minimapOverlay = new GroundMarkerMinimapOverlay(pointManager, client, config);
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
-        panel = new TilePacksListPanel(tilePackManager, pointManager, tilePackConfigManager, filterManager, chatMessageManager, gson);
+        panel = new TilePacksListPanel(tilePackManager, pointManager, filterManager, chatMessageManager, gson);
 
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
 

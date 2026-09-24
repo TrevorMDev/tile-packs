@@ -51,7 +51,7 @@ import java.util.Map;
 public class TilePackManager {
     private static final String CONFIG_GROUP = "tilePacks";
     private static final String CUSTOM_ID = "customId";
-    private static final String CUSTOM_PACKS = "customPacks";
+    private static final String PACK_PREFIX = "pack_";
     private static final String PACKS_PREFIX = "packs";
 
     @NonFinal
@@ -78,9 +78,14 @@ public class TilePackManager {
             final Type type = new TypeToken<Map<Integer, TilePack>>() {
             }.getType();
             Map<Integer, TilePack> parsed = gson.fromJson(data, type);
-            //merge in any custom packs
-            Map<Integer, TilePack> customPacks = loadCustomPacks();
-            parsed.putAll(customPacks);
+            for (TilePack savedPack : loadSavedPacks().values()) {
+                TilePack resourcePack = parsed.get(savedPack.id);
+                if (savedPack.packTiles != null) {
+                    parsed.put(savedPack.id, savedPack);
+                } else if (resourcePack != null) {
+                    resourcePack.visible = savedPack.visible;
+                }
+            }
 
             tilePacks = parsed;
         } catch (Exception e) {
@@ -88,15 +93,27 @@ public class TilePackManager {
         }
     }
 
-    //loads the custom packs from the config
-    private Map<Integer, TilePack> loadCustomPacks() {
-        String json = configManager.getConfiguration(CONFIG_GROUP, CUSTOM_PACKS);
-
-        if (Strings.isNullOrEmpty(json)) {
-            return new HashMap<Integer, TilePack>();
+    private Map<Integer, TilePack> loadSavedPacks() {
+        Map<Integer, TilePack> savedPacks = new HashMap<Integer, TilePack>();
+        String wholePrefix = ConfigManager.getWholeKey(CONFIG_GROUP, null, PACK_PREFIX);
+        for (String key : configManager.getConfigurationKeys(wholePrefix)) {
+            String packId = key.substring(wholePrefix.length());
+            try {
+                Integer id = Integer.valueOf(packId);
+                String json = configManager.getConfiguration(CONFIG_GROUP, PACK_PREFIX + id);
+                TilePack pack = gson.fromJson(json, TilePack.class);
+                if (pack != null) {
+                    savedPacks.put(id, pack);
+                }
+            } catch (RuntimeException e) {
+                log.warn("Unable to load tile pack config {}", key, e);
+            }
         }
-        return gson.fromJson(json, new TypeToken<Map<Integer, TilePack>>() {
-        }.getType());
+        return savedPacks;
+    }
+
+    private void savePack(TilePack pack) {
+        configManager.setConfiguration(CONFIG_GROUP, PACK_PREFIX + pack.id, gson.toJson(pack));
     }
 
     //saves a pack id to the saved config of enabled packs
@@ -148,11 +165,7 @@ public class TilePackManager {
     public void addCustomPack(String name, String tiles) {
         Integer customId = loadCustomId() + 1;
         TilePack pack = new TilePack(customId, name, tiles);
-        Map<Integer, TilePack> customPacks = loadCustomPacks();
-        customPacks.put(customId, pack);
-
-        String json = gson.toJson(customPacks);
-        configManager.setConfiguration(CONFIG_GROUP, CUSTOM_PACKS, json);
+        savePack(pack);
         configManager.setConfiguration(CONFIG_GROUP, CUSTOM_ID, customId);
 
         addEnabledPack(pack.id);
@@ -163,17 +176,16 @@ public class TilePackManager {
     public void removeCustomPack(Integer packId) {
         //unsubscribe the pack before removing it.
         removeEnabledPack(packId);
-        Map<Integer, TilePack> customPacks = loadCustomPacks();
-        customPacks.remove(packId);
-        if (customPacks.isEmpty()) {
-            configManager.unsetConfiguration(CONFIG_GROUP, CUSTOM_PACKS);
-            return;
-        }
-
-        String json = gson.toJson(customPacks);
-        configManager.setConfiguration(CONFIG_GROUP, CUSTOM_PACKS, json);
-
+        configManager.unsetConfiguration(CONFIG_GROUP, PACK_PREFIX + packId);
         tilePacks.remove(packId);
+    }
+
+    public void updatePack(TilePack pack) {
+        if (pack.id >= 10000) {
+            savePack(pack);
+        } else {
+            savePack(new TilePack(pack.id, pack.visible));
+        }
     }
 
     public boolean isPackEnabled(Integer packId) {
