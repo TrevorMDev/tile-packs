@@ -39,7 +39,9 @@ import net.runelite.client.ui.PluginPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * UI panel parent, contains all content for the panel.
@@ -84,7 +86,9 @@ public class TilePacksListPanel extends PluginPanel {
     public void createTilePackPanels() {
         listContainer.removeAll();
         String search = headerPanel.getSearchText();
-        for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet()) {
+        for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey(Comparator.naturalOrder()))
+                .collect(Collectors.toList())) {
             TilePack tilePack = pack.getValue();
             boolean matchesSearch = Strings.isNullOrEmpty(search) || tilePack.packName.toLowerCase().contains(search.toLowerCase());
             boolean matchesFilters = (filterManager.getShowVisible() && tilePack.visible) || (filterManager.getShowInvisible() && !tilePack.visible);
