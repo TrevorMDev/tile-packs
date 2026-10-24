@@ -87,7 +87,7 @@ public class TilePacksListPanel extends PluginPanel {
         listContainer.removeAll();
         String search = headerPanel.getSearchText();
         for (Map.Entry<Integer, TilePack> pack : tilePackManager.getTilePacks().entrySet().stream()
-                .sorted(Map.Entry.comparingByKey(Comparator.naturalOrder()))
+            .sorted(Comparator.comparing(entry -> entry.getValue().packName, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList())) {
             TilePack tilePack = pack.getValue();
             boolean matchesSearch = Strings.isNullOrEmpty(search) || tilePack.packName.toLowerCase().contains(search.toLowerCase());
