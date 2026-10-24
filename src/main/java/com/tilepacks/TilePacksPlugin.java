@@ -30,7 +30,7 @@ import com.google.gson.Gson;
 import com.google.inject.Provides;
 import com.tilepacks.ui.overlay.GroundMarkerMinimapOverlay;
 import com.tilepacks.ui.overlay.GroundMarkerOverlay;
-import com.tilepacks.ui.panel.TilePacksListPanel;
+import com.tilepacks.ui.panel.TilePacksPanel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
@@ -78,7 +78,7 @@ public class TilePacksPlugin extends Plugin {
     private TilePackManager tilePackManager;
     private PointManager pointManager;
     private FilterManager filterManager;
-    private TilePacksListPanel panel;
+    private TilePacksPanel panel;
     private NavigationButton navButton;
 
     @Override
@@ -102,7 +102,7 @@ public class TilePacksPlugin extends Plugin {
         minimapOverlay = new GroundMarkerMinimapOverlay(pointManager, client, config);
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
-        panel = new TilePacksListPanel(tilePackManager, pointManager, filterManager, chatMessageManager, gson);
+        panel = new TilePacksPanel(tilePackManager, pointManager, filterManager, chatMessageManager, gson);
 
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
 
@@ -126,6 +126,9 @@ public class TilePacksPlugin extends Plugin {
 
     @Override
     protected void shutDown() throws Exception {
+        if (panel != null) {
+            panel.cancelPendingTitle();
+        }
         overlayManager.remove(overlay);
         overlayManager.remove(minimapOverlay);
         clientToolbar.removeNavigation(navButton);
@@ -152,6 +155,9 @@ public class TilePacksPlugin extends Plugin {
     @Subscribe
     public void onProfileChanged(ProfileChanged profileChanged)
     {
+        if (panel != null) {
+            panel.cancelPendingTitleEdit();
+        }
         pointManager.loadPoints();
     }
 

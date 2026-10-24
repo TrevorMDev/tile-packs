@@ -49,6 +49,15 @@ Selecting this will show the tile packs and all their options.
 - The eye icon with no line is for showing packs that are NOT hidden in the list. When white, it is enabled and the visible packs will be shown. When grey, it is disabled and the visible packs will not be shown.
 - The eye icon with a line through it is for showing packs that are hidden in the list. When white, it is enabled and the hidden packs will be shown. When grey, it is disabled and the hidden packs will not be shown.
 
+### Editing a Pack
+![Editing a Pack](readme_resources/edit_pack_icon.png)
+
+Choose **Edit** on any pack to open the pack editor, which replaces the pack list. Change the pack title there, then use **Back** to return to the list.
+
+Title changes are saved automatically.
+
+Only title edits available for now, tile edits coming soon.
+
 ### Adding a custom pack
 ![Adding a custom pack](readme_resources/adding_custom_pack_reference.png)
 

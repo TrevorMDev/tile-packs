@@ -31,8 +31,14 @@ import com.google.gson.Gson;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePack;
-import com.tilepacks.ui.panel.*;
-import com.tilepacks.ui.panel.pack.actions.*;
+import com.tilepacks.ui.panel.TilePacksListPanel;
+import com.tilepacks.ui.panel.TilePacksPanel;
+import com.tilepacks.ui.panel.pack.actions.CopyToClipboardLabel;
+import com.tilepacks.ui.panel.pack.actions.DeleteCustomPackLabel;
+import com.tilepacks.ui.panel.pack.actions.EditPackLabel;
+import com.tilepacks.ui.panel.pack.actions.HelpLinkLabel;
+import com.tilepacks.ui.panel.pack.actions.TogglePackLabel;
+import com.tilepacks.ui.panel.pack.actions.ToggleVisibleLabel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.ui.ColorScheme;
@@ -62,6 +68,7 @@ public class TilePackPanel extends JPanel {
     private final ChatMessageManager chatMessageManager;
     private final Gson gson;
     private final TilePacksListPanel tilePacksList;
+    private final TilePacksPanel rootPanel;
 
     private final TilePack tilePack;
 
@@ -69,6 +76,7 @@ public class TilePackPanel extends JPanel {
     private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
     private final JLabel deleteCustomPack;
+    private final JLabel editPack;
     private final JLabel toggleVisible;
     private final JLabel copyToClipboard;
     private final JLabel helpLink;
@@ -79,6 +87,7 @@ public class TilePackPanel extends JPanel {
                   ChatMessageManager chatMessageManager,
                   Gson gson,
                   TilePacksListPanel tilePacksList,
+                  TilePacksPanel rootPanel,
                   TilePack tilePack
     ) {
         super();
@@ -87,6 +96,7 @@ public class TilePackPanel extends JPanel {
         this.chatMessageManager = chatMessageManager;
         this.gson = gson;
         this.tilePacksList = tilePacksList;
+        this.rootPanel = rootPanel;
         this.tilePack = tilePack;
 
         log.debug("Loading pack - {}", tilePack.packName);
@@ -110,6 +120,10 @@ public class TilePackPanel extends JPanel {
         controlPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         controlPanel.setBorder(new MatteBorder(1, 0, 0, 0, ColorScheme.DARK_GRAY_COLOR));
         add(controlPanel, BorderLayout.SOUTH);
+
+        editPack = new EditPackLabel(rootPanel, tilePack.id);
+        editPack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
+        controlPanel.add(editPack);
 
         //anything over 10k is a custom pack
         if (tilePack.id >= 10000) {
