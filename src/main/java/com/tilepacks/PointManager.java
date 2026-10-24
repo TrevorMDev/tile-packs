@@ -25,6 +25,7 @@
 package com.tilepacks;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -52,7 +53,8 @@ import java.util.stream.Collectors;
 public class PointManager {
 
     @Getter
-    private ListMultimap<WorldView, ColorTileMarker> points = ArrayListMultimap.create();
+    @NonFinal
+    private volatile ImmutableListMultimap<WorldView, ColorTileMarker> points = ImmutableListMultimap.of();
 
     @NonFinal
     private Map<Integer, List<GroundMarkerPoint>> activePointsByRegion;
@@ -69,28 +71,37 @@ public class PointManager {
     }
 
     //loads the points from the packs for the players active regions
-    public void loadPoints() {
-        points.clear();
+    public synchronized void loadPoints() {
         activePointsByRegion = null;
+        ListMultimap<WorldView, ColorTileMarker> updatedPoints = ArrayListMultimap.create();
 
         WorldView worldView = client.getTopLevelWorldView();
         if (worldView == null)
         {
+            points = ImmutableListMultimap.copyOf(updatedPoints);
             return;
         }
 
-        loadWorldViewPoints(worldView);
+        addWorldViewPoints(updatedPoints, worldView);
 
         for (WorldEntity we : worldView.worldEntities())
         {
-            loadWorldViewPoints(we.getWorldView());
+            addWorldViewPoints(updatedPoints, we.getWorldView());
         }
+
+        points = ImmutableListMultimap.copyOf(updatedPoints);
     }
 
-    public void loadWorldViewPoints(WorldView worldView)
+    public synchronized void loadWorldViewPoints(WorldView worldView)
     {
-        points.removeAll(worldView);
+        ListMultimap<WorldView, ColorTileMarker> updatedPoints = ArrayListMultimap.create(points);
+        updatedPoints.removeAll(worldView);
+        addWorldViewPoints(updatedPoints, worldView);
+        points = ImmutableListMultimap.copyOf(updatedPoints);
+    }
 
+    private void addWorldViewPoints(ListMultimap<WorldView, ColorTileMarker> updatedPoints, WorldView worldView)
+    {
         int[] regions = worldView.getMapRegions();
         if (regions == null)
         {
@@ -101,12 +112,12 @@ public class PointManager {
         {
             Collection<GroundMarkerPoint> regionPoints = getActivePoints(regionId);
             Collection<ColorTileMarker> colorTileMarkers = translateToColorTileMarker(worldView, regionPoints);
-            points.putAll(worldView, colorTileMarkers);
+            updatedPoints.putAll(worldView, colorTileMarkers);
         }
     }
 
     //gets the active points for a region, loading and indexing all enabled packs once.
-    List<GroundMarkerPoint> getActivePoints(int regionId) {
+    synchronized List<GroundMarkerPoint> getActivePoints(int regionId) {
         if (activePointsByRegion == null)
         {
             activePointsByRegion = new HashMap<>();

@@ -1,8 +1,11 @@
 package com.tilepacks;
 
+import com.google.common.collect.Multimap;
+import com.tilepacks.data.ColorTileMarker;
 import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.data.TilePack;
 import net.runelite.api.Client;
+import net.runelite.api.WorldView;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -11,11 +14,29 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class PointManagerTest extends TilePacksTest
 {
+	@Test
+	public void publishedPointsSnapshotIsImmutable()
+	{
+		PointManager pointManager = new PointManager(mock(TilePackManager.class), gson, null);
+		Multimap<WorldView, ColorTileMarker> snapshot = pointManager.getPoints();
+
+		try
+		{
+			snapshot.clear();
+			fail("Published marker snapshots must be immutable");
+		}
+		catch (UnsupportedOperationException expected)
+		{
+			// Expected: overlays must not be able to mutate a published snapshot.
+		}
+	}
+
 	@Test
 	public void getActivePointsCachesPointsByRegion()
 	{
