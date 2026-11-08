@@ -4,7 +4,6 @@ import com.tilepacks.TilePackManager;
 import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.TilePack;
 import com.tilepacks.ui.panel.editor.actions.BackLabel;
-import net.runelite.api.Client;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
@@ -13,7 +12,6 @@ import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -26,25 +24,23 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 
-/** Minimal title editor for a tile pack. */
+/** Contains all editor functions for a single pack. */
 public class TilePackEditorPanel extends PluginPanel {
     private final TilePackManager tilePackManager;
-    private final Client client;
     private final ColorPickerManager colorPickerManager;
     private final TilePacksConfig config;
     private final JTextField titleField = new JTextField();
-    private final JButton defaultColorButton = new JButton();
+    private final PreviewButton defaultColorButton = new PreviewButton();
     private final Timer saveTimer;
 
     private Integer packId;
     private boolean updatingField;
     private volatile boolean titleSavePending;
 
-    public TilePackEditorPanel(TilePackManager tilePackManager, Client client,
+    public TilePackEditorPanel(TilePackManager tilePackManager,
                                ColorPickerManager colorPickerManager, TilePacksConfig config,
                                Runnable onBack) {
         this.tilePackManager = tilePackManager;
-        this.client = client;
         this.colorPickerManager = colorPickerManager;
         this.config = config;
         setLayout(new BorderLayout());
@@ -117,7 +113,7 @@ public class TilePackEditorPanel extends PluginPanel {
     public void setPack(TilePack pack) {
         flushPendingTitle();
         packId = pack.id;
-        updateColorSwatch(resolveDefaultColor(pack));
+        defaultColorButton.setColor(resolveDefaultColor(pack));
         updatingField = true;
         try {
             titleField.setText(pack.packName == null ? "" : pack.packName);
@@ -145,14 +141,6 @@ public class TilePackEditorPanel extends PluginPanel {
         return Color.YELLOW;
     }
 
-    private void updateColorSwatch(Color color) {
-        defaultColorButton.setBackground(color);
-        defaultColorButton.setOpaque(true);
-        defaultColorButton.setText(String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue()));
-        defaultColorButton.setForeground(color.getRed() + color.getGreen() + color.getBlue() < 384
-                ? Color.WHITE : Color.BLACK);
-    }
-
     private void openColorPicker() {
         if (packId == null) {
             return;
@@ -166,7 +154,8 @@ public class TilePackEditorPanel extends PluginPanel {
 
         SwingUtilities.invokeLater(() -> {
             RuneliteColorPicker colorPicker = colorPickerManager.create(
-                    client, resolveDefaultColor(pack), "New Tile Color", false);
+                    SwingUtilities.windowForComponent(this), resolveDefaultColor(pack), "New Tile Color", false);
+            colorPicker.setLocationRelativeTo(this);
             colorPicker.setOnClose(color -> {
                 if (color == null || !selectedPackId.equals(packId)) {
                     return;
@@ -176,7 +165,7 @@ public class TilePackEditorPanel extends PluginPanel {
                     return;
                 }
                 tilePackManager.updatePackDefaultColor(selectedPackId, color);
-                updateColorSwatch(color);
+                defaultColorButton.setColor(color);
             });
             colorPicker.setVisible(true);
         });
