@@ -1,29 +1,3 @@
-/*
- * Copyright (c) 2021, Adam <Adam@sigterm.info>
- * Copyright (c) 2022, Trevor <https://github.com/TrevorMDev>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.tilepacks.ui.panel.pack;
 
 import com.google.common.base.Strings;
@@ -31,8 +5,14 @@ import com.google.gson.Gson;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePack;
-import com.tilepacks.ui.panel.*;
-import com.tilepacks.ui.panel.pack.actions.*;
+import com.tilepacks.ui.panel.TilePacksListPanel;
+import com.tilepacks.ui.panel.TilePacksPanel;
+import com.tilepacks.ui.panel.pack.actions.CopyToClipboardLabel;
+import com.tilepacks.ui.panel.pack.actions.DeleteCustomPackLabel;
+import com.tilepacks.ui.panel.pack.actions.EditPackLabel;
+import com.tilepacks.ui.panel.pack.actions.HelpLinkLabel;
+import com.tilepacks.ui.panel.pack.actions.TogglePackLabel;
+import com.tilepacks.ui.panel.pack.actions.ToggleVisibleLabel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.ui.ColorScheme;
@@ -62,6 +42,7 @@ public class TilePackPanel extends JPanel {
     private final ChatMessageManager chatMessageManager;
     private final Gson gson;
     private final TilePacksListPanel tilePacksList;
+    private final TilePacksPanel rootPanel;
 
     private final TilePack tilePack;
 
@@ -69,6 +50,7 @@ public class TilePackPanel extends JPanel {
     private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
     private final JLabel deleteCustomPack;
+    private final EditPackLabel editPack;
     private final JLabel toggleVisible;
     private final JLabel copyToClipboard;
     private final JLabel helpLink;
@@ -79,6 +61,7 @@ public class TilePackPanel extends JPanel {
                   ChatMessageManager chatMessageManager,
                   Gson gson,
                   TilePacksListPanel tilePacksList,
+                  TilePacksPanel rootPanel,
                   TilePack tilePack
     ) {
         super();
@@ -87,6 +70,7 @@ public class TilePackPanel extends JPanel {
         this.chatMessageManager = chatMessageManager;
         this.gson = gson;
         this.tilePacksList = tilePacksList;
+        this.rootPanel = rootPanel;
         this.tilePack = tilePack;
 
         log.debug("Loading pack - {}", tilePack.packName);
@@ -110,6 +94,10 @@ public class TilePackPanel extends JPanel {
         controlPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         controlPanel.setBorder(new MatteBorder(1, 0, 0, 0, ColorScheme.DARK_GRAY_COLOR));
         add(controlPanel, BorderLayout.SOUTH);
+
+        editPack = new EditPackLabel(tilePackManager, rootPanel, tilePack.id);
+        editPack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
+        controlPanel.add(editPack);
 
         //anything over 10k is a custom pack
         if (tilePack.id >= 10000) {
@@ -136,7 +124,7 @@ public class TilePackPanel extends JPanel {
         helpLink.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(helpLink);
 
-        togglePack = new TogglePackLabel(tilePackManager, pointManager, tilePack);
+        togglePack = new TogglePackLabel(tilePackManager, pointManager, tilePack, editPack::refresh);
         togglePack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(togglePack);
     }

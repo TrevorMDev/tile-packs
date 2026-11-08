@@ -1,6 +1,7 @@
 package com.tilepacks;
 
 import com.tilepacks.data.TilePack;
+import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ public class TilePackMigrationsTest extends TilePacksTest {
         values.put("tilePackConfigs", "{\"10000\":{\"packId\":10000,\"visible\":false},\"42\":{\"packId\":42,\"visible\":false}}");
         stubConfiguration(configManager, values);
 
-        new TilePackMigrations(gson, configManager).migrateToLatest();
+        new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
 
         TilePack customPack = gson.fromJson(values.get("pack_10000"), TilePack.class);
         TilePack builtInConfig = gson.fromJson(values.get("pack_42"), TilePack.class);
@@ -51,7 +52,7 @@ public class TilePackMigrationsTest extends TilePacksTest {
         values.put("customPacks", "{\"10000\":{\"id\":10000,\"packName\":\"Custom\",\"packTiles\":\"[]\"}}");
         stubConfiguration(configManager, values);
 
-        new TilePackMigrations(gson, configManager).migrateToLatest();
+        new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
 
         TilePack pack = gson.fromJson(values.get("pack_10000"), TilePack.class);
         assertTrue(pack.visible);
@@ -65,7 +66,7 @@ public class TilePackMigrationsTest extends TilePacksTest {
         values.put("pack_10000", "{\"id\":10000,\"packName\":\"Custom\",\"packTiles\":\"[]\",\"visible\":true}");
         stubConfiguration(configManager, values);
 
-        new TilePackMigrations(gson, configManager).migrateToLatest();
+        new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
 
         assertEquals("Custom", gson.fromJson(values.get("pack_10000"), TilePack.class).packName);
         assertEquals("2", values.get("tilePacksVersion"));
@@ -80,7 +81,7 @@ public class TilePackMigrationsTest extends TilePacksTest {
         stubConfiguration(configManager, values);
 
         try {
-            new TilePackMigrations(gson, configManager).migrateToLatest();
+            new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
         } finally {
             assertEquals("not json", values.get("customPacks"));
             assertNull(values.get("tilePacksVersion"));
@@ -97,7 +98,7 @@ public class TilePackMigrationsTest extends TilePacksTest {
                 .when(configManager).setConfiguration(anyString(), anyString(), any());
 
         try {
-            new TilePackMigrations(gson, configManager).migrateToLatest();
+            new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
         } finally {
             assertNotNull(values.get("customPacks"));
             assertNull(values.get("tilePacksVersion"));

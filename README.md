@@ -49,11 +49,26 @@ Selecting this will show the tile packs and all their options.
 - The eye icon with no line is for showing packs that are NOT hidden in the list. When white, it is enabled and the visible packs will be shown. When grey, it is disabled and the visible packs will not be shown.
 - The eye icon with a line through it is for showing packs that are hidden in the list. When white, it is enabled and the hidden packs will be shown. When grey, it is disabled and the hidden packs will not be shown.
 
+### Editing a Pack
+![Editing a Pack](readme_resources/edit_pack_icon.png)
+
+Choose **Edit** on any pack to open the pack editor, which replaces the pack list. Change the pack title there, then use **Back** to return to the list.
+
+Title changes are saved automatically.
+
+Each pack has a default color you can select. While editing a pack, this will be the color used for marking new tiles.
+
+Hold **Shift** and right click. Choose the Tile Packs add/remove action to toggle that tile in the pack.
+
+Tile colors are drawn in this order: the global override color when enabled, the tile's own color, the pack's default color, then yellow.
+
 ### Adding a custom pack
 ![Adding a custom pack](readme_resources/adding_custom_pack_reference.png)
 
 You can add custom packs by scrolling all the way to the bottom of the tile pack list.
 To add a custom pack, enter a pack name, and the tiles you want in the pack.
+
+Choose **Create Empty Pack** to create an enabled custom pack without importing tile data. It will show no markers until tiles are added with editing.
 
 The tiles are formatted to be compatible with ground marker tiles.
 You can import ground marker tiles by right clicking the minimap icon and choosing __Export ground markers__.

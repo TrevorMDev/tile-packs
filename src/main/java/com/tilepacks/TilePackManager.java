@@ -34,14 +34,17 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.config.ConfigManager;
 
 import javax.inject.Inject;
+import java.awt.Color;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is responsible for all functions that interface with or modify tile packs
@@ -58,6 +61,9 @@ public class TilePackManager {
     private Map<Integer, TilePack> tilePacks = new HashMap<Integer, TilePack>();
     @NonFinal
     private List<Integer> enabledPacks = new ArrayList<Integer>();
+    //These are the default packs that the user has edited, which makes a clone of the default.
+    @NonFinal
+    private Set<Integer> fullOverridePackIds = new HashSet<Integer>();
 
     private final Gson gson;
     private final ConfigManager configManager;
@@ -80,8 +86,9 @@ public class TilePackManager {
             Map<Integer, TilePack> parsed = gson.fromJson(data, type);
             for (TilePack savedPack : loadSavedPacks().values()) {
                 TilePack resourcePack = parsed.get(savedPack.id);
-                if (savedPack.packTiles != null) {
+                if (isFullPackRecord(savedPack)) {
                     parsed.put(savedPack.id, savedPack);
+                    fullOverridePackIds.add(savedPack.id);
                 } else if (resourcePack != null) {
                     resourcePack.visible = savedPack.visible;
                 }
@@ -161,8 +168,11 @@ public class TilePackManager {
         }.getType());
     }
 
-    //saves a custom pack to the users config
-    public void addCustomPack(String name, String tiles) {
+    /**
+     * saves a custom pack to the users config
+     * @return the ID of the new pack
+     */
+    public Integer addCustomPack(String name, String tiles) {
         Integer customId = loadCustomId() + 1;
         TilePack pack = new TilePack(customId, name, tiles);
         savePack(pack);
@@ -170,6 +180,7 @@ public class TilePackManager {
 
         addEnabledPack(pack.id);
         tilePacks.put(pack.id, pack);
+        return pack.id;
     }
 
     //removes a custom pack from the users config
@@ -181,11 +192,74 @@ public class TilePackManager {
     }
 
     public void updatePack(TilePack pack) {
-        if (pack.id >= 10000) {
+        if (pack.id >= 10000 || fullOverridePackIds.contains(pack.id)) {
             savePack(pack);
         } else {
             savePack(new TilePack(pack.id, pack.visible));
         }
+    }
+
+    /**
+     * Returns the manager-owned pack and creates a full saved override the first time a bundled
+     * pack is opened for editing.
+     */
+    public TilePack preparePackForEditing(Integer packId) {
+        TilePack pack = tilePacks.get(packId);
+        if (pack == null || packId >= 10000 || fullOverridePackIds.contains(packId)) {
+            return pack;
+        }
+
+        TilePack override = new TilePack();
+        override.id = pack.id;
+        override.packName = pack.packName;
+        override.link = pack.link;
+        override.packTiles = pack.packTiles;
+        override.defaultColor = pack.defaultColor;
+        override.visible = pack.visible;
+
+        savePack(override);
+        tilePacks.put(packId, override);
+        fullOverridePackIds.add(packId);
+        return override;
+    }
+
+    /** Updates only the title of the manager-owned pack and saves its complete record. */
+    public void updatePackTitle(Integer packId, String title) {
+        TilePack pack = preparePackForEditing(packId);
+        if (pack == null) {
+            return;
+        }
+
+        pack.packName = title;
+        savePack(pack);
+        fullOverridePackIds.add(packId);
+    }
+
+    /** Saves the per-pack default color */
+    public void updatePackDefaultColor(Integer packId, Color color) {
+        TilePack pack = preparePackForEditing(packId);
+        if (pack == null) {
+            return;
+        }
+        pack.defaultColor = color;
+        savePack(pack);
+        fullOverridePackIds.add(packId);
+    }
+
+    /** Saves tile JSON */
+    public void updatePackTiles(Integer packId, String packTiles) {
+        TilePack pack = preparePackForEditing(packId);
+        if (pack == null) {
+            return;
+        }
+
+        pack.packTiles = packTiles;
+        savePack(pack);
+        fullOverridePackIds.add(packId);
+    }
+
+    private boolean isFullPackRecord(TilePack pack) {
+        return pack.packName != null || pack.link != null || pack.packTiles != null || pack.defaultColor != null;
     }
 
     public boolean isPackEnabled(Integer packId) {

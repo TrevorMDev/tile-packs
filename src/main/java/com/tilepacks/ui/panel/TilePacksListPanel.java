@@ -35,7 +35,6 @@ import com.tilepacks.ui.panel.custom.CustomPackManagerPanel;
 import com.tilepacks.ui.panel.header.HeaderPanel;
 import com.tilepacks.ui.panel.pack.TilePackPanel;
 import net.runelite.client.chat.ChatMessageManager;
-import net.runelite.client.ui.PluginPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,13 +45,14 @@ import java.util.stream.Collectors;
 /**
  * UI panel parent, contains all content for the panel.
  */
-public class TilePacksListPanel extends PluginPanel {
+public class TilePacksListPanel extends JPanel {
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
     private final FilterManager filterManager;
     private final ChatMessageManager chatMessageManager;
     private final Gson gson;
+    private final TilePacksPanel rootPanel;
 
     private final HeaderPanel headerPanel;
     private final JPanel listContainer = new JPanel();
@@ -61,14 +61,17 @@ public class TilePacksListPanel extends PluginPanel {
                               PointManager pointManager,
                               FilterManager filterManager,
                               ChatMessageManager chatMessageManager,
-                              Gson gson
+                              Gson gson,
+                              TilePacksPanel rootPanel
     ) {
         super();
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
         this.filterManager = filterManager;
         this.chatMessageManager = chatMessageManager;
         this.gson = gson;
+        this.rootPanel = rootPanel;
 
         headerPanel = new HeaderPanel(filterManager, this);
         add(headerPanel);
@@ -76,7 +79,7 @@ public class TilePacksListPanel extends PluginPanel {
         add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1, 0, 0));
 
-        CustomPackManagerPanel customPackManager = new CustomPackManagerPanel(tilePackManager, pointManager, gson,this);
+        CustomPackManagerPanel customPackManager = new CustomPackManagerPanel(tilePackManager, pointManager, gson, rootPanel, this);
 
         add(customPackManager);
 
@@ -95,7 +98,7 @@ public class TilePacksListPanel extends PluginPanel {
 
             if (matchesSearch && matchesFilters) {
                 JPanel tile = new TilePackPanel(tilePackManager, pointManager, chatMessageManager,
-                        gson, this, tilePack);
+                    gson, this, rootPanel, tilePack);
                 listContainer.add(tile);
             }
         }
