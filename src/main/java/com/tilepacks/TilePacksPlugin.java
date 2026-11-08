@@ -93,7 +93,7 @@ public class TilePacksPlugin extends Plugin {
     @Override
     protected void startUp() throws Exception {
         try {
-            new TilePackMigrations(gson, configManager).migrateToLatest();
+            new TilePackMigrations(gson, configManager, chatMessageManager).migrateToLatest();
         } catch (Exception e) {
             log.error("Unable to migrate Tile Packs configuration", e);
             chatMessageManager.queue(QueuedMessage.builder()

@@ -48,6 +48,7 @@ public class TogglePackLabel extends JLabel {
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
     private final TilePack tilePack;
+    private final Runnable onToggle;
 
     static {
         // Icon is https://www.flaticon.com/free-icon/plus_1828819
@@ -62,11 +63,13 @@ public class TogglePackLabel extends JLabel {
         REMOVE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.50f));
     }
 
-    public TogglePackLabel(TilePackManager tilePackManager, PointManager pointManager, TilePack tilePack) {
+    public TogglePackLabel(TilePackManager tilePackManager, PointManager pointManager, TilePack tilePack,
+                           Runnable onToggle) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
         this.tilePack = tilePack;
+        this.onToggle = onToggle;
 
         if(tilePackManager.isPackEnabled(tilePack.id)) {
             setIcon(REMOVE_ICON);
@@ -94,6 +97,7 @@ public class TogglePackLabel extends JLabel {
                     setToolTipText("Remove tiles");
                 }
                 pointManager.loadPoints();
+                onToggle.run();
                 revalidate();
                 repaint();
             }

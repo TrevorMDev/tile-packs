@@ -5,6 +5,9 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.tilepacks.data.TilePack;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 
 import javax.inject.Inject;
@@ -22,15 +25,18 @@ public class TilePackMigrations {
     private static final String TILE_PACK_CONFIGS = "tilePackConfigs";
     private static final String TILE_PACKS_VERSION = "tilePacksVersion";
     // More for reference than actual use.
-    private static final int CURRENT_VERSION = 2;
+    private static final int CURRENT_VERSION = 3;
 
     private final Gson gson;
     private final ConfigManager configManager;
+    private final ChatMessageManager chatMessageManager;
 
     @Inject
-    TilePackMigrations(Gson gson, ConfigManager configManager) {
+    TilePackMigrations(Gson gson, ConfigManager configManager,
+                       ChatMessageManager chatMessageManager) {
         this.gson = gson;
         this.configManager = configManager;
+        this.chatMessageManager = chatMessageManager;
     }
 
     void migrateToLatest() {
@@ -39,6 +45,10 @@ public class TilePackMigrations {
         if (version < 2) {
             migrateV1ToV2();
             saveVersion(2);
+        }
+        if (version < 3) {
+            migrateV2toV3();
+//            saveVersion(3);
         }
     }
 
@@ -122,5 +132,12 @@ public class TilePackMigrations {
     private static class LegacyTilePackConfig {
         private Integer packId;
         private boolean visible;
+    }
+
+    private void migrateV2toV3() {
+        chatMessageManager.queue(QueuedMessage.builder()
+                .type(ChatMessageType.CONSOLE)
+                .runeLiteFormattedMessage("Tile packs now supports per pack edits, click the pencil icon on an enabled pack to try it out.")
+                .build());
     }
 }

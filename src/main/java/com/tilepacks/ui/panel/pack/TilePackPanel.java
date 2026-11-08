@@ -50,7 +50,7 @@ public class TilePackPanel extends JPanel {
     private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
     private final JLabel deleteCustomPack;
-    private final JLabel editPack;
+    private final EditPackLabel editPack;
     private final JLabel toggleVisible;
     private final JLabel copyToClipboard;
     private final JLabel helpLink;
@@ -95,7 +95,7 @@ public class TilePackPanel extends JPanel {
         controlPanel.setBorder(new MatteBorder(1, 0, 0, 0, ColorScheme.DARK_GRAY_COLOR));
         add(controlPanel, BorderLayout.SOUTH);
 
-        editPack = new EditPackLabel(rootPanel, tilePack.id);
+        editPack = new EditPackLabel(tilePackManager, rootPanel, tilePack.id);
         editPack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(editPack);
 
@@ -124,7 +124,7 @@ public class TilePackPanel extends JPanel {
         helpLink.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(helpLink);
 
-        togglePack = new TogglePackLabel(tilePackManager, pointManager, tilePack);
+        togglePack = new TogglePackLabel(tilePackManager, pointManager, tilePack, editPack::refresh);
         togglePack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));
         controlPanel.add(togglePack);
     }
