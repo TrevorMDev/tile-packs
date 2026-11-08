@@ -1,4 +1,4 @@
-package com.tilepacks.ui.panel.editor;
+package com.tilepacks.ui.panel.editor.actions;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -6,14 +6,14 @@ import javax.swing.*;
 
 import lombok.Getter;
 
-class PreviewButton extends JButton
+public class PreviewButton extends JButton
 {
     private static final int CHECKER_SIZE = 10;
 
     @Getter
     private Color color;
 
-    PreviewButton()
+    public PreviewButton()
     {
         setContentAreaFilled(false);
     }
@@ -31,7 +31,7 @@ class PreviewButton extends JButton
         return false;
     }
 
-    void setColor(Color c)
+    public void setColor(Color c)
     {
         this.color = c;
         this.setText(String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue()));

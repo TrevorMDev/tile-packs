@@ -168,8 +168,11 @@ public class TilePackManager {
         }.getType());
     }
 
-    //saves a custom pack to the users config
-    public void addCustomPack(String name, String tiles) {
+    /**
+     * saves a custom pack to the users config
+     * @return the ID of the new pack
+     */
+    public Integer addCustomPack(String name, String tiles) {
         Integer customId = loadCustomId() + 1;
         TilePack pack = new TilePack(customId, name, tiles);
         savePack(pack);
@@ -177,6 +180,7 @@ public class TilePackManager {
 
         addEnabledPack(pack.id);
         tilePacks.put(pack.id, pack);
+        return pack.id;
     }
 
     //removes a custom pack from the users config

@@ -40,7 +40,7 @@ public class TilePacksPanel extends PluginPanel {
 
         listPanel = new TilePacksListPanel(tilePackManager, pointManager, filterManager,
                 chatMessageManager, gson, this);
-        editorPanel = new TilePackEditorPanel(tilePackManager, colorPickerManager, config, this::showList);
+        editorPanel = new TilePackEditorPanel(tilePackManager, colorPickerManager, config, this);
 
         showPanel(listPanel);
     }
@@ -58,7 +58,7 @@ public class TilePacksPanel extends PluginPanel {
         showPanel(editorPanel);
     }
 
-    private void showList() {
+    public void showList() {
         tilePackEditingManager.stopEditing();
         flushPendingTitle();
         editorPanel.clearPack();

@@ -3,7 +3,10 @@ package com.tilepacks.ui.panel.editor;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.TilePack;
+import com.tilepacks.ui.panel.TilePacksPanel;
 import com.tilepacks.ui.panel.editor.actions.BackLabel;
+import com.tilepacks.ui.panel.editor.actions.PreviewButton;
+import com.tilepacks.ui.panel.pack.TilePackPanel;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
@@ -29,6 +32,7 @@ public class TilePackEditorPanel extends PluginPanel {
     private final TilePackManager tilePackManager;
     private final ColorPickerManager colorPickerManager;
     private final TilePacksConfig config;
+    private final TilePacksPanel rootPanel;
     private final JTextField titleField = new JTextField();
     private final PreviewButton defaultColorButton = new PreviewButton();
     private final Timer saveTimer;
@@ -39,15 +43,16 @@ public class TilePackEditorPanel extends PluginPanel {
 
     public TilePackEditorPanel(TilePackManager tilePackManager,
                                ColorPickerManager colorPickerManager, TilePacksConfig config,
-                               Runnable onBack) {
+                               TilePacksPanel rootPanel) {
         this.tilePackManager = tilePackManager;
         this.colorPickerManager = colorPickerManager;
         this.config = config;
+        this.rootPanel = rootPanel;
         setLayout(new BorderLayout());
 
         BackLabel backButton = new BackLabel(() -> {
             flushPendingTitle();
-            onBack.run();
+            rootPanel.showList();
         });
 
         JPanel header = new JPanel(new BorderLayout());
@@ -83,6 +88,7 @@ public class TilePackEditorPanel extends PluginPanel {
         content.add(Box.createVerticalStrut(6));
         content.add(defaultColorButton);
         add(content, BorderLayout.CENTER);
+
         //temporary while this is in development, as it will not all be released together.
         content.add(Box.createVerticalStrut(24));
         JLabel comingSoon = new JLabel("More editing options coming soon");
@@ -141,6 +147,7 @@ public class TilePackEditorPanel extends PluginPanel {
         return Color.YELLOW;
     }
 
+    // TODO: should probably move down into PreviewButton
     private void openColorPicker() {
         if (packId == null) {
             return;

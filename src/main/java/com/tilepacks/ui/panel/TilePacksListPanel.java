@@ -79,7 +79,7 @@ public class TilePacksListPanel extends JPanel {
         add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1, 0, 0));
 
-        CustomPackManagerPanel customPackManager = new CustomPackManagerPanel(tilePackManager, pointManager, gson,this);
+        CustomPackManagerPanel customPackManager = new CustomPackManagerPanel(tilePackManager, pointManager, gson, rootPanel, this);
 
         add(customPackManager);
 
