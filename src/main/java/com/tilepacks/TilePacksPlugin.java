@@ -36,12 +36,14 @@ import net.runelite.api.Client;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.WorldViewLoaded;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.ProfileChanged;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -74,6 +76,10 @@ public class TilePacksPlugin extends Plugin {
     private ChatMessageManager chatMessageManager;
     @Inject
     private ColorPickerManager colorPickerManager;
+    @Inject
+    private ChatboxPanelManager chatboxPanelManager;
+    @Inject
+    private ClientThread clientThread;
 
     private GroundMarkerMinimapOverlay minimapOverlay;
     private GroundMarkerOverlay overlay;
@@ -99,7 +105,7 @@ public class TilePacksPlugin extends Plugin {
 
         tilePackManager = new TilePackManager(gson, configManager);
         pointManager = new PointManager(tilePackManager, gson, client);
-        tilePackEditingManager = new TilePackEditingManager(client, gson, tilePackManager, pointManager, config);
+        tilePackEditingManager = new TilePackEditingManager(client, gson, tilePackManager, pointManager, config, chatboxPanelManager, clientThread);
         filterManager = new FilterManager(configManager);
 
         overlay = new GroundMarkerOverlay(pointManager, client, config);

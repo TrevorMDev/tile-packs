@@ -12,6 +12,8 @@ import net.runelite.api.Tile;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.client.callback.ClientThread;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
 
 import javax.inject.Inject;
 import java.awt.Color;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /** Handles pack scoped scene tile editing. */
 @Slf4j
@@ -34,17 +37,22 @@ public class TilePackEditingManager {
     private final PointManager pointManager;
     private final TilePacksConfig config;
     private final Map<Integer, PackTileCache> tileCaches = new java.util.concurrent.ConcurrentHashMap<>();
+    private final ChatboxPanelManager chatboxPanelManager;
+    private final ClientThread clientThread;
 
     private volatile Integer editingPackId;
 
     @Inject
     TilePackEditingManager(Client client, Gson gson, TilePackManager tilePackManager,
-                           PointManager pointManager, TilePacksConfig config) {
+                           PointManager pointManager, TilePacksConfig config,
+                           ChatboxPanelManager chatboxPanelManager, ClientThread clientThread) {
         this.client = client;
         this.gson = gson;
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
         this.config = config;
+        this.chatboxPanelManager = chatboxPanelManager;
+        this.clientThread = clientThread;
     }
 
     /** Sets the pack currently being edited */
@@ -111,6 +119,14 @@ public class TilePackEditingManager {
                 .setWorldViewId(worldViewId)
                 .setType(MenuAction.RUNELITE)
                 .onClick(menuEvent -> toggleTile(packId, point));
+
+        if (containsTile) {
+            client.createMenuEntry(-1)
+                    .setOption("Edit label in '" + packName + "' pack")
+                    .setWorldViewId(worldViewId)
+                    .setType(MenuAction.RUNELITE)
+                    .onClick(menuEvent -> promptForLabel(packId, point));
+        }
     }
 
     static boolean shouldHandleMenuEntry(Integer editingPackId, boolean shiftPressed, MenuAction action) {
@@ -129,25 +145,90 @@ public class TilePackEditingManager {
             return false;
         }
 
-        int regionId = point.getRegionID();
-        int regionX = point.getRegionX();
-        int regionY = point.getRegionY();
-        int plane = point.getPlane();
-        TileCoordinate coordinate = new TileCoordinate(regionId, regionX, regionY, plane);
+        TileCoordinate coordinate = toCoordinate(point);
 
         if (cache.coordinates.remove(coordinate)) {
             cache.points.removeIf(coordinate::matches);
         } else {
-            GroundMarkerPoint tile = new GroundMarkerPoint(regionId, regionX, regionY, plane,
-                    resolveTileColor(pack), null);
+            GroundMarkerPoint tile = new GroundMarkerPoint(coordinate.regionId, coordinate.regionX,
+                    coordinate.regionY, coordinate.plane, resolveTileColor(pack), null);
             cache.points.add(tile);
             cache.coordinates.add(coordinate);
         }
 
-        String updatedTiles = gson.toJson(cache.points);
-        tilePackManager.updatePackTiles(packId, updatedTiles);
-        pointManager.loadPoints();
+        saveTiles(packId, cache);
         return true;
+    }
+
+    /** Opens the chatbox prompt for a tile's label, pre-filled with the current one. */
+    protected void promptForLabel(Integer packId, WorldPoint point) {
+        final String currentLabel;
+        synchronized (this) {
+            if (!Objects.equals(editingPackId, packId)) {
+                return;
+            }
+            PackTileCache cache = getTileCache(packId);
+            if (cache == null) {
+                return;
+            }
+            int index = cache.indexOf(toCoordinate(point));
+            if (index < 0) {
+                return;
+            }
+            currentLabel = cache.points.get(index).getLabel();
+        }
+
+        // Opened outside the lock so the prompt never holds up menu handling
+        chatboxPanelManager.openTextInput("Tile label")
+                .value(currentLabel == null ? "" : currentLabel)
+                .onDone((Consumer<String>) input -> clientThread.invoke(() -> {
+                    setTileLabel(packId, point, input);
+                }))
+                .build();
+    }
+
+    /** Sets or clears the label on an existing tile. A blank label clears it. */
+    synchronized boolean setTileLabel(Integer packId, WorldPoint point, String label) {
+        // The prompt can outlive the state it was opened in: re-check everything
+        if (!Objects.equals(editingPackId, packId)) {
+            return false;
+        }
+
+        PackTileCache cache = getTileCache(packId);
+        if (cache == null) {
+            return false;
+        }
+
+        int index = cache.indexOf(toCoordinate(point));
+        if (index < 0) {
+            return false; // tile was removed while the prompt was open
+        }
+
+        String normalized = label == null ? null : label.trim();
+        if (normalized != null && normalized.isEmpty()) {
+            normalized = null;
+        }
+
+        GroundMarkerPoint existing = cache.points.get(index);
+        if (Objects.equals(existing.getLabel(), normalized)) {
+            return false; // nothing changed, skip the save
+        }
+
+        cache.points.set(index, new GroundMarkerPoint(existing.getRegionId(), existing.getRegionX(),
+                existing.getRegionY(), existing.getZ(), existing.getColor(), normalized));
+
+        saveTiles(packId, cache);
+        return true;
+    }
+
+    /** Shared persistence step for any change to a pack's tiles. */
+    private void saveTiles(Integer packId, PackTileCache cache) {
+        tilePackManager.updatePackTiles(packId, gson.toJson(cache.points));
+        pointManager.loadPoints();
+    }
+
+    private static TileCoordinate toCoordinate(WorldPoint point) {
+        return new TileCoordinate(point.getRegionID(), point.getRegionX(), point.getRegionY(), point.getPlane());
     }
 
     private Color resolveTileColor(TilePack pack) {
@@ -202,6 +283,15 @@ public class TilePackEditingManager {
         private boolean contains(WorldPoint point) {
             return coordinates.contains(new TileCoordinate(point.getRegionID(), point.getRegionX(),
                     point.getRegionY(), point.getPlane()));
+        }
+
+        private int indexOf(TileCoordinate coordinate) {
+            for (int i = 0; i < points.size(); i++) {
+                if (coordinate.matches(points.get(i))) {
+                    return i;
+                }
+            }
+            return -1;
         }
     }
 
