@@ -3,10 +3,14 @@ package com.tilepacks.ui.panel;
 import com.google.gson.Gson;
 import com.tilepacks.FilterManager;
 import com.tilepacks.PointManager;
+import com.tilepacks.TilePackEditingManager;
 import com.tilepacks.TilePackManager;
+import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.TilePack;
 import com.tilepacks.ui.panel.editor.TilePackEditorPanel;
+import net.runelite.api.Client;
 import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.PluginPanel;
 
 import javax.swing.JPanel;
@@ -16,21 +20,27 @@ import java.awt.BorderLayout;
 /** Root navigation panel for the pack list and the pack editor. */
 public class TilePacksPanel extends PluginPanel {
     private final TilePackManager tilePackManager;
+    private final TilePackEditingManager tilePackEditingManager;
     private final TilePacksListPanel listPanel;
     private final TilePackEditorPanel editorPanel;
     private JPanel activePanel;
 
     public TilePacksPanel(TilePackManager tilePackManager,
+                          TilePackEditingManager tilePackEditingManager,
                           PointManager pointManager,
                           FilterManager filterManager,
                           ChatMessageManager chatMessageManager,
-                          Gson gson) {
-                this.tilePackManager = tilePackManager;
-                setLayout(new BorderLayout());
+                          Gson gson,
+                          Client client,
+                          ColorPickerManager colorPickerManager,
+                          TilePacksConfig config) {
+        this.tilePackManager = tilePackManager;
+                this.tilePackEditingManager = tilePackEditingManager;
+        setLayout(new BorderLayout());
 
         listPanel = new TilePacksListPanel(tilePackManager, pointManager, filterManager,
                 chatMessageManager, gson, this);
-        editorPanel = new TilePackEditorPanel(tilePackManager, this::showList);
+        editorPanel = new TilePackEditorPanel(tilePackManager, client, colorPickerManager, config, this::showList);
 
         showPanel(listPanel);
     }
@@ -44,11 +54,14 @@ public class TilePacksPanel extends PluginPanel {
         }
 
         editorPanel.setPack(pack);
+        tilePackEditingManager.editPack(packId);
         showPanel(editorPanel);
     }
 
     private void showList() {
+        tilePackEditingManager.stopEditing();
         flushPendingTitle();
+        editorPanel.clearPack();
         listPanel.createTilePackPanels();
         showPanel(listPanel);
     }
@@ -73,6 +86,7 @@ public class TilePacksPanel extends PluginPanel {
 
     /** Discards a pending title edit when the active RuneLite profile changes. */
     public void cancelPendingTitleEdit() {
+        tilePackEditingManager.clear();
         cancelPendingTitle();
 
         Runnable showList = () -> {
@@ -88,8 +102,9 @@ public class TilePacksPanel extends PluginPanel {
 
     /** Discards a pending title edit without changing the current view. */
     public void cancelPendingTitle() {
+        tilePackEditingManager.stopEditing();
         if (editorPanel != null) {
-            editorPanel.cancelPendingTitle();
+            editorPanel.clearPack();
         }
     }
 

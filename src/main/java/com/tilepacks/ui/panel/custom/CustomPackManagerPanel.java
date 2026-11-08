@@ -27,6 +27,7 @@ package com.tilepacks.ui.panel.custom;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.tilepacks.PointManager;
+import com.tilepacks.TilePackImportValidator;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.TilePacksPlugin;
 import com.tilepacks.data.GroundMarkerPoint;
@@ -59,6 +60,7 @@ public class CustomPackManagerPanel extends PluginPanel {
     private final JLabel tilesLabel;
     private final FlatTextField tilesInput;
     private final JButton addPackButton;
+    private final JButton createEmptyPackButton;
     private final JPanel discordRow;
     private final JLabel discordShare;
     private final JLabel discordShareButton;
@@ -110,6 +112,7 @@ public class CustomPackManagerPanel extends PluginPanel {
             }
             if (tilesInput.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(inputLabel, "Must add tiles");
+                return;
             }
             //check the format of the import points. We actually save the string, so this formatting is just to check it is valid.
             List<GroundMarkerPoint> importPoints;
@@ -120,7 +123,9 @@ public class CustomPackManagerPanel extends PluginPanel {
                 JOptionPane.showMessageDialog(inputLabel, "Error parsing tiles, check the formatting");
                 return;
             }
-            if (importPoints.isEmpty()) {
+                if (importPoints == null || importPoints.isEmpty()
+                    || importPoints.stream().anyMatch(java.util.Objects::isNull)
+                    || !TilePackImportValidator.isValid(tilesInput.getText(), gson)) {
                 JOptionPane.showMessageDialog(inputLabel, "Error parsing tiles, check the formatting");
                 return;
             }
@@ -129,6 +134,21 @@ public class CustomPackManagerPanel extends PluginPanel {
             tilePacksList.createTilePackPanels();
         });
         add(addPackButton);
+
+        createEmptyPackButton = new JButton("Create Empty Pack");
+        createEmptyPackButton.setHorizontalAlignment(JLabel.CENTER);
+        createEmptyPackButton.setFocusable(false);
+        createEmptyPackButton.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 10, 30));
+        createEmptyPackButton.addActionListener(e -> {
+            if (nameInput.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(inputLabel, "Must add a pack name");
+                return;
+            }
+            tilePackManager.addCustomPack(nameInput.getText(), "[]");
+            pointManager.loadPoints();
+            tilePacksList.createTilePackPanels();
+        });
+        add(createEmptyPackButton);
 
         discordRow = new JPanel();
         discordRow.setLayout(new BorderLayout());

@@ -42,6 +42,7 @@ import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
 
 import javax.inject.Inject;
+import java.awt.Color;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -127,17 +128,41 @@ public class PointManager {
                     continue;
                 }
 
-                List<GroundMarkerPoint> markers = gson.fromJson(
-                        pack.getValue().packTiles,
-                        new TypeToken<List<GroundMarkerPoint>>() {
-                        }.getType());
+                List<GroundMarkerPoint> markers;
+                try {
+                    markers = gson.fromJson(
+                            pack.getValue().packTiles,
+                            new TypeToken<List<GroundMarkerPoint>>() {
+                            }.getType());
+                } catch (RuntimeException e) {
+                    log.warn("Skipping tile pack {} because its tile data is invalid", pack.getKey(), e);
+                    continue;
+                }
+                if (markers == null) {
+                    log.warn("Skipping tile pack {} because its tile list is null", pack.getKey());
+                    continue;
+                }
                 for (GroundMarkerPoint marker : markers)
                 {
+                    if (marker == null) {
+                        log.warn("Skipping a null tile in pack {}", pack.getKey());
+                        continue;
+                    }
+                    Color markerColor = marker.getColor();
+                    if (markerColor == null) {
+                        markerColor = pack.getValue().defaultColor == null
+                                ? Color.YELLOW
+                                : pack.getValue().defaultColor;
+                    }
+                    GroundMarkerPoint resolvedMarker = new GroundMarkerPoint(
+                        marker.getRegionId(), marker.getRegionX(), marker.getRegionY(), marker.getZ(),
+                        markerColor, marker.getLabel());
                     activePointsByRegion
-                            .computeIfAbsent(marker.getRegionId(), key -> new ArrayList<>())
-                            .add(marker);
+                        .computeIfAbsent(resolvedMarker.getRegionId(), key -> new ArrayList<>())
+                        .add(resolvedMarker);
                 }
             }
+
         }
 
         List<GroundMarkerPoint> regionPoints = activePointsByRegion.get(regionId);
@@ -146,7 +171,6 @@ public class PointManager {
         }
         return regionPoints;
     }
-
 
     private Collection<ColorTileMarker> translateToColorTileMarker(WorldView wv, Collection<GroundMarkerPoint> points)
     {

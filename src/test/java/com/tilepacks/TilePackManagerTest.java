@@ -4,6 +4,7 @@ import com.tilepacks.data.TilePack;
 import net.runelite.client.config.ConfigManager;
 import org.junit.Test;
 
+import java.awt.Color;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -179,6 +180,101 @@ public class TilePackManagerTest extends TilePacksTest {
         assertNotNull(pack);
         assertEquals("Saved", pack.packName);
         assertFalse(pack.visible);
+    }
+
+    @Test
+    public void defaultColorIsSavedReloadedAndOldRecordsRemainNull() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        values.put("pack_10005", "{\"id\":10005,\"packName\":\"Legacy\",\"packTiles\":\"[]\"}");
+        stubConfiguration(configManager, values);
+        TilePackManager manager = new TilePackManager(gson, configManager);
+
+        assertNull(manager.getTilePacks().get(10005).defaultColor);
+        manager.updatePackDefaultColor(10005, new Color(12, 34, 56, 78));
+
+        TilePack saved = gson.fromJson(values.get("pack_10005"), TilePack.class);
+        assertEquals(new Color(12, 34, 56, 78), saved.defaultColor);
+        TilePack reloaded = new TilePackManager(gson, configManager).getTilePacks().get(10005);
+        assertEquals(saved.defaultColor, reloaded.defaultColor);
+    }
+
+    @Test
+    public void defaultColorUpdateDoesNotParseOrRewriteTileJson() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        String oldTileJson = "not-parsed-by-color-setting";
+        values.put("pack_10005", gson.toJson(new TilePack(10005, "Legacy", oldTileJson)));
+        stubConfiguration(configManager, values);
+        TilePackManager manager = new TilePackManager(gson, configManager);
+
+        manager.updatePackDefaultColor(10005, Color.CYAN);
+
+        TilePack saved = gson.fromJson(values.get("pack_10005"), TilePack.class);
+        assertEquals(Color.CYAN, saved.defaultColor);
+        assertEquals(oldTileJson, saved.packTiles);
+    }
+
+    @Test
+    public void bundledDefaultColorUpdateCreatesFullSameIdOverrideAndFullUpdatesRetainIt() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        stubConfiguration(configManager, values);
+        TilePackManager manager = new TilePackManager(gson, configManager);
+        TilePack bundled = manager.getTilePacks().get(1);
+        Color color = new Color(23, 45, 67, 89);
+
+        manager.updatePackDefaultColor(1, color);
+
+        TilePack override = gson.fromJson(values.get("pack_1"), TilePack.class);
+        assertEquals(Integer.valueOf(1), override.id);
+        assertEquals(bundled.packName, override.packName);
+        assertEquals(bundled.link, override.link);
+        assertEquals(bundled.packTiles, override.packTiles);
+        assertEquals(color, override.defaultColor);
+        override.visible = false;
+        manager.updatePack(override);
+        assertEquals(color, gson.fromJson(values.get("pack_1"), TilePack.class).defaultColor);
+
+        TilePack reloaded = new TilePackManager(gson, configManager).getTilePacks().get(1);
+        assertEquals(color, reloaded.defaultColor);
+        assertEquals(bundled.packTiles, reloaded.packTiles);
+        assertTrue(manager.getFullOverridePackIds().contains(1));
+    }
+
+    @Test
+    public void defaultColorAloneIdentifiesSavedBundledFullRecord() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        TilePack savedRecord = new TilePack();
+        savedRecord.id = 1;
+        savedRecord.visible = false;
+        savedRecord.defaultColor = Color.GREEN;
+        values.put("pack_1", gson.toJson(savedRecord));
+        stubConfiguration(configManager, values);
+
+        TilePackManager manager = new TilePackManager(gson, configManager);
+        TilePack loadedPack = manager.getTilePacks().get(1);
+
+        assertNotNull(loadedPack.defaultColor);
+        assertFalse(loadedPack.visible);
+        assertTrue(manager.getFullOverridePackIds().contains(1));
+    }
+
+    @Test
+    public void creatingEmptyPackStoresEmptyArrayAndEnablesIt() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        stubConfiguration(configManager, values);
+        TilePackManager manager = new TilePackManager(gson, configManager);
+
+        manager.addCustomPack("Empty", "[]");
+
+        TilePack saved = gson.fromJson(values.get("pack_10000"), TilePack.class);
+        assertEquals("[]", saved.packTiles);
+        assertEquals(java.util.Collections.singletonList(10000), manager.getEnabledPacks());
+        assertTrue(manager.isPackEnabled(10000));
+        assertEquals("10000", values.get("customId"));
     }
 
     private ConfigManager mockConfigManager() {

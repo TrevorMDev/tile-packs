@@ -33,9 +33,8 @@ import com.tilepacks.ui.overlay.GroundMarkerOverlay;
 import com.tilepacks.ui.panel.TilePacksPanel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.GameState;
 import net.runelite.api.ChatMessageType;
-import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.WorldViewLoaded;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
@@ -47,6 +46,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
 
@@ -72,10 +72,13 @@ public class TilePacksPlugin extends Plugin {
     private OverlayManager overlayManager;
     @Inject
     private ChatMessageManager chatMessageManager;
+    @Inject
+    private ColorPickerManager colorPickerManager;
 
     private GroundMarkerMinimapOverlay minimapOverlay;
     private GroundMarkerOverlay overlay;
     private TilePackManager tilePackManager;
+    private TilePackEditingManager tilePackEditingManager;
     private PointManager pointManager;
     private FilterManager filterManager;
     private TilePacksPanel panel;
@@ -96,13 +99,15 @@ public class TilePacksPlugin extends Plugin {
 
         tilePackManager = new TilePackManager(gson, configManager);
         pointManager = new PointManager(tilePackManager, gson, client);
+        tilePackEditingManager = new TilePackEditingManager(client, gson, tilePackManager, pointManager, config);
         filterManager = new FilterManager(configManager);
 
         overlay = new GroundMarkerOverlay(pointManager, client, config);
         minimapOverlay = new GroundMarkerMinimapOverlay(pointManager, client, config);
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
-        panel = new TilePacksPanel(tilePackManager, pointManager, filterManager, chatMessageManager, gson);
+        panel = new TilePacksPanel(tilePackManager, tilePackEditingManager, pointManager, filterManager, chatMessageManager,
+            gson, client, colorPickerManager, config);
 
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
 
@@ -127,7 +132,10 @@ public class TilePacksPlugin extends Plugin {
     @Override
     protected void shutDown() throws Exception {
         if (panel != null) {
-            panel.cancelPendingTitle();
+            panel.cancelPendingTitleEdit();
+        }
+        if (tilePackEditingManager != null) {
+            tilePackEditingManager.clear();
         }
         overlayManager.remove(overlay);
         overlayManager.remove(minimapOverlay);
@@ -157,6 +165,8 @@ public class TilePacksPlugin extends Plugin {
     {
         if (panel != null) {
             panel.cancelPendingTitleEdit();
+        } else if (tilePackEditingManager != null) {
+            tilePackEditingManager.clear();
         }
         pointManager.loadPoints();
     }
@@ -166,6 +176,13 @@ public class TilePacksPlugin extends Plugin {
         log.debug("Changing world view");
         // map region has just been updated
         pointManager.loadWorldViewPoints(event.getWorldView());
+    }
+
+    @Subscribe
+    public void onMenuEntryAdded(MenuEntryAdded event) {
+        if (tilePackEditingManager != null) {
+            tilePackEditingManager.onMenuEntryAdded(event);
+        }
     }
 
     @Provides

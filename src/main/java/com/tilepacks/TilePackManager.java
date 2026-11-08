@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.config.ConfigManager;
 
 import javax.inject.Inject;
+import java.awt.Color;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
@@ -209,6 +210,7 @@ public class TilePackManager {
         override.packName = pack.packName;
         override.link = pack.link;
         override.packTiles = pack.packTiles;
+        override.defaultColor = pack.defaultColor;
         override.visible = pack.visible;
 
         savePack(override);
@@ -229,8 +231,31 @@ public class TilePackManager {
         fullOverridePackIds.add(packId);
     }
 
+    /** Saves the per-pack default color */
+    public void updatePackDefaultColor(Integer packId, Color color) {
+        TilePack pack = preparePackForEditing(packId);
+        if (pack == null) {
+            return;
+        }
+        pack.defaultColor = color;
+        savePack(pack);
+        fullOverridePackIds.add(packId);
+    }
+
+    /** Saves tile JSON */
+    public void updatePackTiles(Integer packId, String packTiles) {
+        TilePack pack = preparePackForEditing(packId);
+        if (pack == null) {
+            return;
+        }
+
+        pack.packTiles = packTiles;
+        savePack(pack);
+        fullOverridePackIds.add(packId);
+    }
+
     private boolean isFullPackRecord(TilePack pack) {
-        return pack.packName != null || pack.link != null || pack.packTiles != null;
+        return pack.packName != null || pack.link != null || pack.packTiles != null || pack.defaultColor != null;
     }
 
     public boolean isPackEnabled(Integer packId) {

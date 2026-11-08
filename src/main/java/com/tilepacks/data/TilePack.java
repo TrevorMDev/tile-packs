@@ -24,6 +24,9 @@
  */
 package com.tilepacks.data;
 
+import javax.annotation.Nullable;
+import java.awt.Color;
+
 /**
  * Represents all the data needed to make a TilePack
  */
@@ -32,6 +35,8 @@ public class TilePack {
     public String packName;
     public String link;
     public String packTiles;
+    @Nullable
+    public Color defaultColor;
     public boolean visible = true;
 
     public TilePack() {
