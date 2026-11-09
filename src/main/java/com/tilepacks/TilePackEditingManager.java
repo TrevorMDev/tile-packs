@@ -136,13 +136,13 @@ public class TilePackEditingManager {
             return false;
         }
 
-        TileCoordinate coordinate = toCoordinate(point);
+        GroundMarkerPoint coordinate = toCoordinate(point);
 
         if (cache.coordinates.remove(coordinate)) {
-            cache.points.removeIf(coordinate::matches);
+            cache.points.removeIf(coordinate::matchesLocation);
         } else {
             GroundMarkerPoint tile = new GroundMarkerPoint(coordinate.regionId, coordinate.regionX,
-                    coordinate.regionY, coordinate.plane, resolveTileColor(pack), null);
+                    coordinate.regionY, coordinate.z, resolveTileColor(pack), null);
             cache.points.add(tile);
             cache.coordinates.add(coordinate);
         }
@@ -218,8 +218,8 @@ public class TilePackEditingManager {
         pointManager.loadPoints();
     }
 
-    private static TileCoordinate toCoordinate(WorldPoint point) {
-        return new TileCoordinate(point.getRegionID(), point.getRegionX(), point.getRegionY(), point.getPlane());
+    private static GroundMarkerPoint toCoordinate(WorldPoint point) {
+        return new GroundMarkerPoint(point.getRegionID(), point.getRegionX(), point.getRegionY(), point.getPlane(), null, null);
     }
 
     private Color resolveTileColor(TilePack pack) {
@@ -228,6 +228,12 @@ public class TilePackEditingManager {
         }
         if (config.overrideColorActive()) {
             return config.overrideColor();
+        }
+        if (!pack.parsedPackTiles.isEmpty()) {
+            Color firstInPack = pack.parsedPackTiles.get(0).getColor();
+            if (firstInPack != null) {
+                return firstInPack;
+            }
         }
         return Color.YELLOW;
     }
@@ -251,65 +257,28 @@ public class TilePackEditingManager {
 
     private static final class PackTileCache {
         private final List<GroundMarkerPoint> points;
-        private final Set<TileCoordinate> coordinates = new HashSet<>();
+        private final Set<GroundMarkerPoint> coordinates = new HashSet<>();
 
         private PackTileCache(List<GroundMarkerPoint> points) {
             this.points = new ArrayList<>(points);
             for (GroundMarkerPoint point : points) {
-                coordinates.add(new TileCoordinate(point.getRegionId(), point.getRegionX(),
-                        point.getRegionY(), point.getZ()));
+                coordinates.add(new GroundMarkerPoint(point.getRegionId(), point.getRegionX(),
+                        point.getRegionY(), point.getZ(), null, null));
             }
         }
 
         private boolean contains(WorldPoint point) {
-            return coordinates.contains(new TileCoordinate(point.getRegionID(), point.getRegionX(),
-                    point.getRegionY(), point.getPlane()));
+            return coordinates.contains(new GroundMarkerPoint(point.getRegionID(), point.getRegionX(),
+                    point.getRegionY(), point.getPlane(), null, null));
         }
 
-        private int indexOf(TileCoordinate coordinate) {
+        private int indexOf(GroundMarkerPoint coordinate) {
             for (int i = 0; i < points.size(); i++) {
-                if (coordinate.matches(points.get(i))) {
+                if (coordinate.matchesLocation(points.get(i))) {
                     return i;
                 }
             }
             return -1;
-        }
-    }
-
-    private static final class TileCoordinate {
-        private final int regionId;
-        private final int regionX;
-        private final int regionY;
-        private final int plane;
-
-        private TileCoordinate(int regionId, int regionX, int regionY, int plane) {
-            this.regionId = regionId;
-            this.regionX = regionX;
-            this.regionY = regionY;
-            this.plane = plane;
-        }
-
-        private boolean matches(GroundMarkerPoint point) {
-            return point.getRegionId() == regionId && point.getRegionX() == regionX
-                    && point.getRegionY() == regionY && point.getZ() == plane;
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) {
-                return true;
-            }
-            if (!(other instanceof TileCoordinate)) {
-                return false;
-            }
-            TileCoordinate that = (TileCoordinate) other;
-            return regionId == that.regionId && regionX == that.regionX
-                    && regionY == that.regionY && plane == that.plane;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(regionId, regionX, regionY, plane);
         }
     }
 }
