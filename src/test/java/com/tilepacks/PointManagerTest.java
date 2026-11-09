@@ -9,6 +9,7 @@ import net.runelite.api.WorldView;
 import org.junit.Test;
 
 import java.awt.Color;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class PointManagerTest extends TilePacksTest
 	@Test
 	public void publishedPointsSnapshotIsImmutable()
 	{
-		PointManager pointManager = new PointManager(mock(TilePackManager.class), gson, null);
+		PointManager pointManager = new PointManager(mock(TilePackManager.class), null);
 		Multimap<WorldView, ColorTileMarker> snapshot = pointManager.getPoints();
 
 		try
@@ -42,15 +43,14 @@ public class PointManagerTest extends TilePacksTest
 	public void getActivePointsCachesPointsByRegion()
 	{
 		TilePackManager tilePackManager = mock(TilePackManager.class);
-		TilePack pack = new TilePack(1, "test", "["
-				+ "{\"regionId\":1,\"regionX\":2,\"regionY\":3,\"z\":0},"
-				+ "{\"regionId\":1,\"regionX\":4,\"regionY\":5,\"z\":0},"
-				+ "{\"regionId\":2,\"regionX\":6,\"regionY\":7,\"z\":1}"
-				+ "]");
+		TilePack pack = pack(1, "test",
+				new GroundMarkerPoint(1, 2, 3, 0, null, null),
+				new GroundMarkerPoint(1, 4, 5, 0, null, null),
+				new GroundMarkerPoint(2, 6, 7, 1, null, null));
 		when(tilePackManager.getEnabledPacks()).thenReturn(Collections.singletonList(1));
 		when(tilePackManager.getTilePacks()).thenReturn(Collections.singletonMap(1, pack));
 
-		PointManager pointManager = new PointManager(tilePackManager, gson, null);
+		PointManager pointManager = new PointManager(tilePackManager, null);
 		List<GroundMarkerPoint> first = pointManager.getActivePoints(1);
 		List<GroundMarkerPoint> second = pointManager.getActivePoints(1);
 
@@ -63,14 +63,14 @@ public class PointManagerTest extends TilePacksTest
 	public void resolvesTileColorBeforePackDefaultAndYellowFallback()
 	{
 		TilePackManager tilePackManager = mock(TilePackManager.class);
-		TilePack pack = new TilePack(1, "colors", gson.toJson(java.util.Arrays.asList(
+		TilePack pack = pack(1, "colors",
 				new GroundMarkerPoint(1, 2, 3, 0, null, "pack default"),
-				new GroundMarkerPoint(1, 4, 5, 0, Color.BLUE, "tile color"))));
+				new GroundMarkerPoint(1, 4, 5, 0, Color.BLUE, "tile color"));
 		pack.defaultColor = Color.RED;
 		when(tilePackManager.getEnabledPacks()).thenReturn(Collections.singletonList(1));
 		when(tilePackManager.getTilePacks()).thenReturn(Collections.singletonMap(1, pack));
 
-		PointManager pointManager = new PointManager(tilePackManager, gson, null);
+		PointManager pointManager = new PointManager(tilePackManager, null);
 		List<GroundMarkerPoint> points = pointManager.getActivePoints(1);
 
 		assertEquals(Color.RED, points.get(0).getColor());
@@ -81,11 +81,11 @@ public class PointManagerTest extends TilePacksTest
 	public void resolvesMissingTileAndPackColorToYellow()
 	{
 		TilePackManager tilePackManager = mock(TilePackManager.class);
-		TilePack pack = new TilePack(1, "legacy", "[{\"regionId\":1,\"regionX\":2,\"regionY\":3,\"z\":0}]");
+		TilePack pack = pack(1, "legacy", new GroundMarkerPoint(1, 2, 3, 0, null, null));
 		when(tilePackManager.getEnabledPacks()).thenReturn(Collections.singletonList(1));
 		when(tilePackManager.getTilePacks()).thenReturn(Collections.singletonMap(1, pack));
 
-		PointManager pointManager = new PointManager(tilePackManager, gson, null);
+		PointManager pointManager = new PointManager(tilePackManager, null);
 
 		assertEquals(Color.YELLOW, pointManager.getActivePoints(1).get(0).getColor());
 	}
@@ -94,27 +94,40 @@ public class PointManagerTest extends TilePacksTest
 	public void emptyPackProducesNoActivePoints()
 	{
 		TilePackManager tilePackManager = mock(TilePackManager.class);
-		TilePack pack = new TilePack(10000, "empty", "[]");
+		TilePack pack = pack(10000, "empty");
 		when(tilePackManager.getEnabledPacks()).thenReturn(Collections.singletonList(10000));
 		when(tilePackManager.getTilePacks()).thenReturn(Collections.singletonMap(10000, pack));
 
-		PointManager pointManager = new PointManager(tilePackManager, gson, null);
+		PointManager pointManager = new PointManager(tilePackManager, null);
 
 		assertEquals(Collections.emptyList(), pointManager.getActivePoints(1));
 	}
 
 	@Test
-	public void skipsNullEntriesAndMalformedPackJsonWhenBuildingActivePoints()
+	public void skipsPacksWithUnreadableTilesWhenBuildingActivePoints()
 	{
 		TilePackManager tilePackManager = mock(TilePackManager.class);
-		TilePack validPack = new TilePack(1, "valid", gson.toJson(java.util.Arrays.asList(
-				null,
-				new GroundMarkerPoint(1, 2, 3, 0, Color.GREEN, null))));
+		TilePack validPack = pack(1, "valid", new GroundMarkerPoint(1, 2, 3, 0, Color.GREEN, null));
 		TilePack malformedPack = new TilePack(2, "malformed", "not-json");
 		when(tilePackManager.getEnabledPacks()).thenReturn(java.util.Arrays.asList(1, 2));
 		when(tilePackManager.getTilePacks()).thenReturn(java.util.Map.of(1, validPack, 2, malformedPack));
 
-		PointManager pointManager = new PointManager(tilePackManager, gson, null);
+		PointManager pointManager = new PointManager(tilePackManager, null);
+
+		assertEquals(1, pointManager.getActivePoints(1).size());
+		assertEquals(Color.GREEN, pointManager.getActivePoints(1).get(0).getColor());
+	}
+
+	@Test
+	public void pointsComeFromTheParsedTilesNotThePackString()
+	{
+		TilePackManager tilePackManager = mock(TilePackManager.class);
+		TilePack pack = new TilePack(1, "parsed", "not-json");
+		pack.parsedPackTiles = Collections.singletonList(new GroundMarkerPoint(1, 2, 3, 0, Color.GREEN, null));
+		when(tilePackManager.getEnabledPacks()).thenReturn(Collections.singletonList(1));
+		when(tilePackManager.getTilePacks()).thenReturn(Collections.singletonMap(1, pack));
+
+		PointManager pointManager = new PointManager(tilePackManager, null);
 
 		assertEquals(1, pointManager.getActivePoints(1).size());
 		assertEquals(Color.GREEN, pointManager.getActivePoints(1).get(0).getColor());
@@ -124,15 +137,13 @@ public class PointManagerTest extends TilePacksTest
 	public void loadPointsInvalidatesActivePointsCache()
 	{
 		TilePackManager tilePackManager = mock(TilePackManager.class);
-		TilePack pack = new TilePack(1, "test", "["
-				+ "{\"regionId\":1,\"regionX\":2,\"regionY\":3,\"z\":0}"
-				+ "]");
+		TilePack pack = pack(1, "test", new GroundMarkerPoint(1, 2, 3, 0, null, null));
 		when(tilePackManager.getEnabledPacks()).thenReturn(Collections.singletonList(1));
 		when(tilePackManager.getTilePacks()).thenReturn(Collections.singletonMap(1, pack));
 		Client client = mock(Client.class);
 		when(client.getTopLevelWorldView()).thenReturn(null);
 
-		PointManager pointManager = new PointManager(tilePackManager, gson, client);
+		PointManager pointManager = new PointManager(tilePackManager, client);
 		List<GroundMarkerPoint> first = pointManager.getActivePoints(1);
 		pointManager.loadPoints();
 		List<GroundMarkerPoint> second = pointManager.getActivePoints(1);
@@ -140,5 +151,13 @@ public class PointManagerTest extends TilePacksTest
 		assertEquals(1, first.size());
 		assertEquals(1, second.size());
 		assertNotSame(first, second);
+	}
+
+	private TilePack pack(int id, String name, GroundMarkerPoint... points)
+	{
+		List<GroundMarkerPoint> tiles = Arrays.asList(points);
+		TilePack pack = new TilePack(id, name, gson.toJson(tiles));
+		pack.parsedPackTiles = tiles;
+		return pack;
 	}
 }

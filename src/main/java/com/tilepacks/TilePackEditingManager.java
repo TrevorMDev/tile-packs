@@ -1,10 +1,7 @@
 package com.tilepacks;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.data.TilePack;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
@@ -17,7 +14,6 @@ import net.runelite.client.game.chatbox.ChatboxPanelManager;
 
 import javax.inject.Inject;
 import java.awt.Color;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,12 +23,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /** Handles pack scoped scene tile editing. */
-@Slf4j
 public class TilePackEditingManager {
-    private static final Type TILE_LIST_TYPE = new TypeToken<List<GroundMarkerPoint>>() { }.getType();
-
     private final Client client;
-    private final Gson gson;
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
     private final TilePacksConfig config;
@@ -43,11 +35,10 @@ public class TilePackEditingManager {
     private volatile Integer editingPackId;
 
     @Inject
-    TilePackEditingManager(Client client, Gson gson, TilePackManager tilePackManager,
+    TilePackEditingManager(Client client, TilePackManager tilePackManager,
                            PointManager pointManager, TilePacksConfig config,
                            ChatboxPanelManager chatboxPanelManager, ClientThread clientThread) {
         this.client = client;
-        this.gson = gson;
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
         this.config = config;
@@ -223,7 +214,7 @@ public class TilePackEditingManager {
 
     /** Shared persistence step for any change to a pack's tiles. */
     private void saveTiles(Integer packId, PackTileCache cache) {
-        tilePackManager.updatePackTiles(packId, gson.toJson(cache.points));
+        tilePackManager.updatePackTiles(packId, cache.points);
         pointManager.loadPoints();
     }
 
@@ -241,10 +232,10 @@ public class TilePackEditingManager {
         return Color.YELLOW;
     }
 
-    /** Parses a pack's tile JSON once into a retained cache, not once per menu/click event. */
+    /** Builds a retained edit cache from the pack's parsed tiles, not once per menu/click event. */
     private PackTileCache getTileCache(Integer packId) {
         TilePack pack = tilePackManager.getTilePacks().get(packId);
-        if (pack == null || pack.packTiles == null) {
+        if (pack == null || pack.parsedPackTiles == null) {
             return null;
         }
 
@@ -253,19 +244,9 @@ public class TilePackEditingManager {
             return cache;
         }
 
-        try {
-            List<GroundMarkerPoint> points = gson.fromJson(pack.packTiles, TILE_LIST_TYPE);
-            if (points == null) {
-                return null;
-            }
-            points.removeIf(Objects::isNull);
-            cache = new PackTileCache(points);
-            tileCaches.put(packId, cache);
-            return cache;
-        } catch (RuntimeException e) {
-            log.warn("Unable to load tile data for editing pack {}", packId, e);
-            return null;
-        }
+        cache = new PackTileCache(pack.parsedPackTiles);
+        tileCaches.put(packId, cache);
+        return cache;
     }
 
     private static final class PackTileCache {

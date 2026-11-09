@@ -1,32 +1,9 @@
-/*
- * Copyright (c) 2024, Trevor <https://github.com/TrevorMDev>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 package com.tilepacks;
 
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.data.TilePack;
 import lombok.Value;
 import lombok.experimental.NonFinal;
@@ -40,10 +17,12 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -56,6 +35,8 @@ public class TilePackManager {
     private static final String CUSTOM_ID = "customId";
     private static final String PACK_PREFIX = "pack_";
     private static final String PACKS_PREFIX = "packs";
+    private static final Type TILE_LIST_TYPE = new TypeToken<List<GroundMarkerPoint>>() {
+    }.getType();
 
     @NonFinal
     private Map<Integer, TilePack> tilePacks = new HashMap<Integer, TilePack>();
@@ -94,6 +75,10 @@ public class TilePackManager {
                 }
             }
 
+            for (TilePack pack : parsed.values()) {
+                pack.parsedPackTiles = parseTiles(pack.packTiles);
+            }
+
             tilePacks = parsed;
         } catch (Exception e) {
             log.error("error loading packs from json, this is likely due to a bad json file.", e);
@@ -117,6 +102,29 @@ public class TilePackManager {
             }
         }
         return savedPacks;
+    }
+
+    /**
+     * Parses a pack's tile JSON. Null entries are dropped.
+     * @return an unmodifiable list, or null when the JSON is missing or unreadable
+     */
+    public List<GroundMarkerPoint> parseTiles(String packTiles) {
+        if (packTiles == null) {
+            return null;
+        }
+
+        try {
+            List<GroundMarkerPoint> points = gson.fromJson(packTiles, TILE_LIST_TYPE);
+            if (points == null) {
+                return null;
+            }
+            List<GroundMarkerPoint> parsed = new ArrayList<>(points);
+            parsed.removeIf(Objects::isNull);
+            return Collections.unmodifiableList(parsed);
+        } catch (RuntimeException e) {
+            log.warn("Unable to parse tile data", e);
+            return null;
+        }
     }
 
     private void savePack(TilePack pack) {
@@ -175,6 +183,7 @@ public class TilePackManager {
     public Integer addCustomPack(String name, String tiles) {
         Integer customId = loadCustomId() + 1;
         TilePack pack = new TilePack(customId, name, tiles);
+        pack.parsedPackTiles = parseTiles(tiles);
         savePack(pack);
         configManager.setConfiguration(CONFIG_GROUP, CUSTOM_ID, customId);
 
@@ -214,6 +223,7 @@ public class TilePackManager {
         override.packName = pack.packName;
         override.link = pack.link;
         override.packTiles = pack.packTiles;
+        override.parsedPackTiles = pack.parsedPackTiles;
         override.defaultColor = pack.defaultColor;
         override.visible = pack.visible;
 
@@ -247,13 +257,15 @@ public class TilePackManager {
     }
 
     /** Saves tile JSON */
-    public void updatePackTiles(Integer packId, String packTiles) {
+    public void updatePackTiles(Integer packId, List<GroundMarkerPoint> points) {
         TilePack pack = preparePackForEditing(packId);
         if (pack == null) {
             return;
         }
 
-        pack.packTiles = packTiles;
+        List<GroundMarkerPoint> snapshot = Collections.unmodifiableList(new ArrayList<>(points));
+        pack.packTiles = gson.toJson(snapshot, TILE_LIST_TYPE);
+        pack.parsedPackTiles = snapshot;
         savePack(pack);
         fullOverridePackIds.add(packId);
     }

@@ -31,7 +31,7 @@ import com.tilepacks.FilterManager;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePack;
-import com.tilepacks.ui.panel.custom.CustomPackManagerPanel;
+import com.tilepacks.ui.panel.custom.CustomPackPanel;
 import com.tilepacks.ui.panel.header.HeaderPanel;
 import com.tilepacks.ui.panel.pack.TilePackPanel;
 import net.runelite.client.chat.ChatMessageManager;
@@ -79,7 +79,7 @@ public class TilePacksListPanel extends JPanel {
         add(listContainer);
         listContainer.setLayout(new GridLayout(0, 1, 0, 0));
 
-        CustomPackManagerPanel customPackManager = new CustomPackManagerPanel(tilePackManager, pointManager, gson, rootPanel, this);
+        CustomPackPanel customPackManager = new CustomPackPanel(tilePackManager, pointManager, gson, rootPanel, this);
 
         add(customPackManager);
 

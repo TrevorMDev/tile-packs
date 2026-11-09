@@ -71,7 +71,7 @@ public class TilePackEditingManagerTest extends TilePacksTest {
         ChatboxPanelManager chatboxPanelManager = mock(ChatboxPanelManager.class);
         ClientThread clientThread = mock(ClientThread.class);
         TilePackEditingManager editingManager = new TilePackEditingManager(
-                mock(Client.class), gson, tilePackManager, pointManager, new TestConfig(Color.YELLOW), chatboxPanelManager, clientThread);
+                mock(Client.class), tilePackManager, pointManager, new TestConfig(Color.YELLOW), chatboxPanelManager, clientThread);
         editingManager.editPack(10000);
 
         WorldPoint point = new WorldPoint(3200, 3229, 2);
@@ -106,7 +106,7 @@ public class TilePackEditingManagerTest extends TilePacksTest {
         ChatboxPanelManager chatboxPanelManager = mock(ChatboxPanelManager.class);
         ClientThread clientThread = mock(ClientThread.class);
         TilePackEditingManager editingManager = new TilePackEditingManager(
-                mock(Client.class), gson, tilePackManager, mock(PointManager.class), new TestConfig(Color.YELLOW), chatboxPanelManager, clientThread);
+                mock(Client.class), tilePackManager, mock(PointManager.class), new TestConfig(Color.YELLOW), chatboxPanelManager, clientThread);
         editingManager.editPack(10000);
 
         assertTrue(editingManager.toggleTile(10000, new WorldPoint(3200, 3229, 2)));
@@ -123,7 +123,7 @@ public class TilePackEditingManagerTest extends TilePacksTest {
         ChatboxPanelManager chatboxPanelManager = mock(ChatboxPanelManager.class);
         ClientThread clientThread = mock(ClientThread.class);
         TilePackEditingManager editingManager = new TilePackEditingManager(
-                mock(Client.class), gson, tilePackManager, mock(PointManager.class), new TestConfig(Color.YELLOW), chatboxPanelManager, clientThread);
+                mock(Client.class), tilePackManager, mock(PointManager.class), new TestConfig(Color.YELLOW), chatboxPanelManager, clientThread);
         WorldPoint point = new WorldPoint(3200, 3229, 2);
 
         assertFalse(editingManager.toggleTile(10000, point));
@@ -131,6 +131,45 @@ public class TilePackEditingManagerTest extends TilePacksTest {
         editingManager.stopEditing();
         assertFalse(editingManager.toggleTile(10000, point));
         assertEquals("[]", gson.fromJson(values.get("pack_10000"), TilePack.class).packTiles);
+    }
+
+    // ------------------------------------------------------------------
+    // Parsed tiles stay in sync
+    // ------------------------------------------------------------------
+
+    @Test
+    public void editCacheIsBuiltFromTheParsedTilesNotThePackString() {
+        Fixture f = new Fixture("not json", new TestConfig(Color.YELLOW));
+        f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles =
+                Collections.singletonList(tile(0, Color.RED, null));
+        f.editingManager.editPack(PACK_ID);
+
+        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_A));
+
+        assertEquals("[]", f.savedPack().packTiles);
+        assertTrue(f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles.isEmpty());
+    }
+
+    @Test
+    public void savedEditsKeepTheParsedListInSyncWithThePackString() {
+        Fixture f = new Fixture(tile(0, Color.RED, null));
+        f.editingManager.editPack(PACK_ID);
+
+        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_B));
+        List<GroundMarkerPoint> parsed = f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles;
+        assertEquals(2, parsed.size());
+        assertEquals(gson.toJson(parsed), f.savedPack().packTiles);
+
+        assertTrue(f.editingManager.setTileLabel(PACK_ID, POINT_A, "Bank"));
+        parsed = f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles;
+        assertEquals("Bank", parsed.get(0).getLabel());
+        assertEquals("Bank", f.savedTiles().get(0).getLabel());
+        assertEquals(gson.toJson(parsed), f.savedPack().packTiles);
+
+        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_A));
+        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_B));
+        assertTrue(f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles.isEmpty());
+        assertEquals("[]", f.savedPack().packTiles);
     }
 
     // ------------------------------------------------------------------
@@ -255,7 +294,7 @@ public class TilePackEditingManagerTest extends TilePacksTest {
     public void clearDropsTheParsedCacheSoNextEditReadsFreshData() {
         Fixture f = new Fixture(tile(0, Color.RED, null));
         f.editingManager.editPack(PACK_ID);
-        f.tilePackManager.updatePackTiles(PACK_ID, gson.toJson(Collections.singletonList(tile(1, Color.GREEN, null))));
+        f.tilePackManager.updatePackTiles(PACK_ID, Collections.singletonList(tile(1, Color.GREEN, null)));
 
         f.editingManager.clear();
         f.editingManager.editPack(PACK_ID);
@@ -274,7 +313,7 @@ public class TilePackEditingManagerTest extends TilePacksTest {
         Fixture f = new Fixture(tile(0, Color.RED, null));
         f.editingManager.editPack(PACK_ID);
         f.editingManager.stopEditing();
-        f.tilePackManager.updatePackTiles(PACK_ID, gson.toJson(Collections.singletonList(tile(1, Color.GREEN, null))));
+        f.tilePackManager.updatePackTiles(PACK_ID, Collections.singletonList(tile(1, Color.GREEN, null)));
 
         f.editingManager.editPack(PACK_ID);
 
@@ -516,7 +555,7 @@ public class TilePackEditingManagerTest extends TilePacksTest {
             stubConfiguration(configManager, values);
             values.put("pack_" + PACK_ID, gson.toJson(new TilePack(PACK_ID, "Tiles", packTilesJson)));
             tilePackManager = new TilePackManager(gson, configManager);
-            editingManager = new TilePackEditingManager(client, gson, tilePackManager, pointManager,
+            editingManager = new TilePackEditingManager(client, tilePackManager, pointManager,
                     config, chatboxPanelManager, clientThread);
         }
 

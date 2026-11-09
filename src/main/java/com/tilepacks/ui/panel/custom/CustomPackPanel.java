@@ -1,6 +1,5 @@
 package com.tilepacks.ui.panel.custom;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePackImportValidator;
@@ -17,12 +16,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * UI that handles the addition of new tile packs
  */
-public class CustomPackManagerPanel extends PluginPanel {
+public class CustomPackPanel extends PluginPanel {
 
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
@@ -36,8 +34,8 @@ public class CustomPackManagerPanel extends PluginPanel {
     private final JLabel discordShare;
     private final JLabel discordShareButton;
 
-    public CustomPackManagerPanel(TilePackManager tilePackManager, PointManager pointManager,
-                                  Gson gson, TilePacksPanel rootPanel, TilePacksListPanel tilePacksList) {
+    public CustomPackPanel(TilePackManager tilePackManager, PointManager pointManager,
+                           Gson gson, TilePacksPanel rootPanel, TilePacksListPanel tilePacksList) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;
@@ -189,18 +187,10 @@ public class CustomPackManagerPanel extends PluginPanel {
     }
 
     private boolean areTilesValid(String tilesJson) {
-        // We save the raw string, so parsing here is only to check that it is valid.
-        final List<GroundMarkerPoint> importPoints;
-        try {
-            importPoints = gson.fromJson(tilesJson, new TypeToken<List<GroundMarkerPoint>>() {
-            }.getType());
-        } catch (Exception ex) {
-            return false;
-        }
+        final List<GroundMarkerPoint> importPoints = tilePackManager.parseTiles(tilesJson);
 
         return importPoints != null
                 && !importPoints.isEmpty()
-                && importPoints.stream().noneMatch(Objects::isNull)
                 && TilePackImportValidator.isValid(tilesJson, gson);
     }
 }

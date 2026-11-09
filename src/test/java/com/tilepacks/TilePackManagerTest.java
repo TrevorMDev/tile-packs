@@ -1,12 +1,16 @@
 package com.tilepacks;
 
+import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.data.TilePack;
 import net.runelite.client.config.ConfigManager;
 import org.junit.Test;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -96,6 +100,7 @@ public class TilePackManagerTest extends TilePacksTest {
         assertEquals(bundledPack.packName, preparedPack.packName);
         assertEquals(bundledPack.link, preparedPack.link);
         assertEquals(bundledPack.packTiles, preparedPack.packTiles);
+        assertSame(bundledPack.parsedPackTiles, preparedPack.parsedPackTiles);
         assertEquals(bundledPack.visible, preparedPack.visible);
         assertEquals(bundledPack.id, savedOverride.id);
         assertEquals(bundledPack.packName, savedOverride.packName);
@@ -275,6 +280,152 @@ public class TilePackManagerTest extends TilePacksTest {
         assertEquals(java.util.Collections.singletonList(10000), manager.getEnabledPacks());
         assertTrue(manager.isPackEnabled(10000));
         assertEquals("10000", values.get("customId"));
+    }
+
+    @Test
+    public void bundledPacksAreLoadedWithParsedTiles() {
+        ConfigManager configManager = mockConfigManager();
+        stubConfiguration(configManager, new HashMap<>());
+        TilePackManager manager = new TilePackManager(gson, configManager);
+
+        for (TilePack pack : manager.getTilePacks().values()) {
+            assertNotNull("Pack " + pack.id + " has unparsed tiles", pack.parsedPackTiles);
+        }
+        TilePack abyssalSire = manager.getTilePacks().get(1);
+        assertEquals(24, abyssalSire.parsedPackTiles.size());
+        assertEquals(11850, abyssalSire.parsedPackTiles.get(0).getRegionId());
+    }
+
+    @Test
+    public void parseTilesDropsNullEntriesAndRejectsUnreadableJson() {
+        ConfigManager configManager = mockConfigManager();
+        stubConfiguration(configManager, new HashMap<>());
+        TilePackManager manager = new TilePackManager(gson, configManager);
+
+        List<GroundMarkerPoint> parsed = manager.parseTiles(
+                "[null,{\"regionId\":1,\"regionX\":2,\"regionY\":3,\"z\":0}]");
+
+        assertEquals(1, parsed.size());
+        assertEquals(2, parsed.get(0).getRegionX());
+        assertEquals(Collections.emptyList(), manager.parseTiles("[]"));
+        assertNull(manager.parseTiles("not json"));
+        assertNull(manager.parseTiles("null"));
+        assertNull(manager.parseTiles(null));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void parsedTilesCannotBeModified() {
+        ConfigManager configManager = mockConfigManager();
+        stubConfiguration(configManager, new HashMap<>());
+        TilePackManager manager = new TilePackManager(gson, configManager);
+
+        manager.getTilePacks().get(1).parsedPackTiles.clear();
+    }
+
+    @Test
+    public void customPackIsCreatedWithParsedTiles() {
+        ConfigManager configManager = mockConfigManager();
+        stubConfiguration(configManager, new HashMap<>());
+        TilePackManager manager = new TilePackManager(gson, configManager);
+        String tilesJson = gson.toJson(Arrays.asList(point(0, "first"), point(1, null)));
+
+        Integer packId = manager.addCustomPack("Custom", tilesJson);
+
+        TilePack pack = manager.getTilePacks().get(packId);
+        assertEquals(tilesJson, pack.packTiles);
+        assertEquals(2, pack.parsedPackTiles.size());
+        assertEquals("first", pack.parsedPackTiles.get(0).getLabel());
+        assertEquals(Color.RED, pack.parsedPackTiles.get(0).getColor());
+    }
+
+    @Test
+    public void savedPackIsLoadedWithParsedTiles() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        values.put("pack_10000", gson.toJson(new TilePack(10000, "Saved",
+                gson.toJson(Arrays.asList(point(0, "first"), point(1, null), point(2, null))))));
+        stubConfiguration(configManager, values);
+
+        TilePack pack = new TilePackManager(gson, configManager).getTilePacks().get(10000);
+
+        assertEquals(3, pack.parsedPackTiles.size());
+        assertEquals("first", pack.parsedPackTiles.get(0).getLabel());
+    }
+
+    @Test
+    public void unreadableSavedTilesLeaveParsedTilesNull() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        values.put("pack_10005", gson.toJson(new TilePack(10005, "Broken", "not json")));
+        stubConfiguration(configManager, values);
+
+        TilePack pack = new TilePackManager(gson, configManager).getTilePacks().get(10005);
+
+        assertEquals("not json", pack.packTiles);
+        assertNull(pack.parsedPackTiles);
+    }
+
+    @Test
+    public void parsedTilesAreNotSerializedIntoTheSavedPack() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        stubConfiguration(configManager, values);
+        TilePackManager manager = new TilePackManager(gson, configManager);
+
+        manager.addCustomPack("Custom", gson.toJson(Arrays.asList(point(0, null))));
+        assertFalse(values.get("pack_10000").contains("parsedPackTiles"));
+
+        manager.updatePackTiles(10000, Arrays.asList(point(1, null)));
+        assertFalse(values.get("pack_10000").contains("parsedPackTiles"));
+    }
+
+    @Test
+    public void updatePackTilesKeepsPackStringAndParsedListInSync() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        stubConfiguration(configManager, values);
+        TilePackManager manager = new TilePackManager(gson, configManager);
+        manager.addCustomPack("Tiles", "[]");
+        List<GroundMarkerPoint> points = new ArrayList<>(Arrays.asList(point(0, "first"), point(1, null)));
+
+        manager.updatePackTiles(10000, points);
+        points.add(point(2, null));
+
+        TilePack pack = manager.getTilePacks().get(10000);
+        assertEquals(2, pack.parsedPackTiles.size());
+        assertEquals("first", pack.parsedPackTiles.get(0).getLabel());
+        TilePack saved = gson.fromJson(values.get("pack_10000"), TilePack.class);
+        assertEquals(pack.packTiles, saved.packTiles);
+        assertEquals(pack.parsedPackTiles, manager.parseTiles(saved.packTiles));
+        TilePack reloaded = new TilePackManager(gson, configManager).getTilePacks().get(10000);
+        assertEquals(pack.parsedPackTiles, reloaded.parsedPackTiles);
+        assertEquals("first", reloaded.parsedPackTiles.get(0).getLabel());
+    }
+
+    @Test
+    public void updatePackTilesOnBundledPackCreatesOverrideWithParsedTiles() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        stubConfiguration(configManager, values);
+        TilePackManager manager = new TilePackManager(gson, configManager);
+        TilePack bundled = manager.getTilePacks().get(1);
+        String bundledName = bundled.packName;
+
+        manager.updatePackTiles(1, Arrays.asList(point(5, "only")));
+
+        TilePack updated = manager.getTilePacks().get(1);
+        assertEquals(1, updated.parsedPackTiles.size());
+        assertEquals("only", updated.parsedPackTiles.get(0).getLabel());
+        TilePack saved = gson.fromJson(values.get("pack_1"), TilePack.class);
+        assertEquals(bundledName, saved.packName);
+        assertEquals(updated.packTiles, saved.packTiles);
+        assertTrue(manager.getFullOverridePackIds().contains(1));
+        TilePack reloaded = new TilePackManager(gson, configManager).getTilePacks().get(1);
+        assertEquals(updated.parsedPackTiles, reloaded.parsedPackTiles);
+    }
+
+    private static GroundMarkerPoint point(int regionX, String label) {
+        return new GroundMarkerPoint(12850, regionX, 29, 2, Color.RED, label);
     }
 
     private ConfigManager mockConfigManager() {

@@ -48,7 +48,7 @@ public class TilePackMigrations {
         }
         if (version < 3) {
             migrateV2toV3();
-//            saveVersion(3);
+            saveVersion(3);
         }
     }
 
@@ -137,7 +137,7 @@ public class TilePackMigrations {
     private void migrateV2toV3() {
         chatMessageManager.queue(QueuedMessage.builder()
                 .type(ChatMessageType.CONSOLE)
-                .runeLiteFormattedMessage("Tile packs now supports per pack edits, click the pencil icon on an enabled pack to try it out.")
+                .runeLiteFormattedMessage("Tile packs now supports per pack edits. Click the pencil icon on an enabled pack to try it out.")
                 .build());
     }
 }
