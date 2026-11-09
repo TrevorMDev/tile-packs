@@ -1,5 +1,7 @@
 package com.tilepacks.data;
 
+import net.runelite.api.coords.WorldPoint;
+
 import javax.annotation.Nullable;
 import java.awt.Color;
 import java.util.List;
@@ -36,5 +38,14 @@ public class TilePack {
     public TilePack(Integer id, boolean visible) {
         this.id = id;
         this.visible = visible;
+    }
+
+    public int indexOf(WorldPoint point) {
+        for (int i = 0; i < parsedPackTiles.size(); i++) {
+            if(parsedPackTiles.get(i).matchesLocation(point)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

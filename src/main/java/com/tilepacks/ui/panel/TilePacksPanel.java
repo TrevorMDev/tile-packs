@@ -86,7 +86,7 @@ public class TilePacksPanel extends PluginPanel {
 
     /** Discards a pending title edit when the active RuneLite profile changes. */
     public void cancelPendingTitleEdit() {
-        tilePackEditingManager.clear();
+        tilePackEditingManager.stopEditing();
         cancelPendingTitle();
 
         Runnable showList = () -> {

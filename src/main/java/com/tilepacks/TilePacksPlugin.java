@@ -115,7 +115,7 @@ public class TilePacksPlugin extends Plugin {
             panel.cancelPendingTitleEdit();
         }
         if (tilePackEditingManager != null) {
-            tilePackEditingManager.clear();
+            tilePackEditingManager.stopEditing();
         }
         overlayManager.remove(overlay);
         overlayManager.remove(minimapOverlay);
@@ -146,7 +146,7 @@ public class TilePacksPlugin extends Plugin {
         if (panel != null) {
             panel.cancelPendingTitleEdit();
         } else if (tilePackEditingManager != null) {
-            tilePackEditingManager.clear();
+            tilePackEditingManager.stopEditing();
         }
         pointManager.loadPoints();
     }

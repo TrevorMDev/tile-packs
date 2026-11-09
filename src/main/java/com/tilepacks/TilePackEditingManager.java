@@ -28,7 +28,6 @@ public class TilePackEditingManager {
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
     private final TilePacksConfig config;
-    private final Map<Integer, PackTileCache> tileCaches = new java.util.concurrent.ConcurrentHashMap<>();
     private final ChatboxPanelManager chatboxPanelManager;
     private final ClientThread clientThread;
 
@@ -53,18 +52,10 @@ public class TilePackEditingManager {
             return;
         }
         editingPackId = packId;
-        getTileCache(packId);
     }
 
-    /** Leaves edit mode without discarding the parsed cache for this profile. */
     public synchronized void stopEditing() {
         editingPackId = null;
-    }
-
-    /** Drops profile-specific edit state and parsed data after a profile change. */
-    public synchronized void clear() {
-        editingPackId = null;
-        tileCaches.clear();
     }
 
     public Integer getEditingPackId() {
@@ -93,17 +84,13 @@ public class TilePackEditingManager {
             return;
         }
 
-        PackTileCache cache = getTileCache(packId);
-        if (cache == null) {
-            return;
-        }
-
         TilePack pack = tilePackManager.getTilePacks().get(packId);
         if (pack == null) {
             return;
         }
 
-        boolean containsTile = cache.contains(point);
+        boolean containsTile = pack.parsedPackTiles.contains(new GroundMarkerPoint(point.getRegionID(), point.getRegionX(),
+                point.getRegionY(), point.getPlane(), null, null));
         String packName = pack.packName == null ? "" : pack.packName;
         client.createMenuEntry(-1)
                 .setOption((containsTile ? "Remove from '" + packName + "' pack" : "Mark in '" + packName + "' pack") )
@@ -130,24 +117,22 @@ public class TilePackEditingManager {
             return false;
         }
 
-        PackTileCache cache = getTileCache(packId);
         TilePack pack = tilePackManager.getTilePacks().get(packId);
-        if (cache == null || pack == null) {
+        if (pack == null) {
             return false;
         }
 
-        GroundMarkerPoint coordinate = toCoordinate(point);
+        GroundMarkerPoint newPoint = new GroundMarkerPoint(point.getRegionID(), point.getRegionX(),
+                point.getRegionY(), point.getPlane(), resolveTileColor(pack), null);
 
-        if (cache.coordinates.remove(coordinate)) {
-            cache.points.removeIf(coordinate::matchesLocation);
+        int index = pack.indexOf(point);
+        if(index > 0) {
+            pack.parsedPackTiles.remove(index);
         } else {
-            GroundMarkerPoint tile = new GroundMarkerPoint(coordinate.regionId, coordinate.regionX,
-                    coordinate.regionY, coordinate.z, resolveTileColor(pack), null);
-            cache.points.add(tile);
-            cache.coordinates.add(coordinate);
+            pack.parsedPackTiles.add(newPoint);
         }
 
-        saveTiles(packId, cache);
+        saveTiles(packId, pack.parsedPackTiles);
         return true;
     }
 
@@ -158,15 +143,13 @@ public class TilePackEditingManager {
             if (!Objects.equals(editingPackId, packId)) {
                 return;
             }
-            PackTileCache cache = getTileCache(packId);
-            if (cache == null) {
-                return;
-            }
-            int index = cache.indexOf(toCoordinate(point));
+            TilePack pack = tilePackManager.getTilePacks().get(packId);
+
+            int index = pack.indexOf(point);
             if (index < 0) {
                 return;
             }
-            currentLabel = cache.points.get(index).getLabel();
+            currentLabel = pack.parsedPackTiles.get(index).getLabel();
         }
 
         // Opened outside the lock so the prompt never holds up menu handling
@@ -184,13 +167,9 @@ public class TilePackEditingManager {
         if (!Objects.equals(editingPackId, packId)) {
             return false;
         }
+        TilePack pack = tilePackManager.getTilePacks().get(packId);
 
-        PackTileCache cache = getTileCache(packId);
-        if (cache == null) {
-            return false;
-        }
-
-        int index = cache.indexOf(toCoordinate(point));
+        int index = pack.indexOf(point);
         if (index < 0) {
             return false; // tile was removed while the prompt was open
         }
@@ -200,21 +179,21 @@ public class TilePackEditingManager {
             normalized = null;
         }
 
-        GroundMarkerPoint existing = cache.points.get(index);
+        GroundMarkerPoint existing = pack.parsedPackTiles.get(index);
         if (Objects.equals(existing.getLabel(), normalized)) {
             return false; // nothing changed, skip the save
         }
 
-        cache.points.set(index, new GroundMarkerPoint(existing.getRegionId(), existing.getRegionX(),
+        pack.parsedPackTiles.set(index, new GroundMarkerPoint(existing.getRegionId(), existing.getRegionX(),
                 existing.getRegionY(), existing.getZ(), existing.getColor(), normalized));
 
-        saveTiles(packId, cache);
+        saveTiles(packId, pack.parsedPackTiles);
         return true;
     }
 
     /** Shared persistence step for any change to a pack's tiles. */
-    private void saveTiles(Integer packId, PackTileCache cache) {
-        tilePackManager.updatePackTiles(packId, cache.points);
+    private void saveTiles(Integer packId, List<GroundMarkerPoint> points) {
+        tilePackManager.updatePackTiles(packId, points);
         pointManager.loadPoints();
     }
 
@@ -236,49 +215,5 @@ public class TilePackEditingManager {
             }
         }
         return Color.YELLOW;
-    }
-
-    /** Builds a retained edit cache from the pack's parsed tiles, not once per menu/click event. */
-    private PackTileCache getTileCache(Integer packId) {
-        TilePack pack = tilePackManager.getTilePacks().get(packId);
-        if (pack == null || pack.parsedPackTiles == null) {
-            return null;
-        }
-
-        PackTileCache cache = tileCaches.get(packId);
-        if (cache != null) {
-            return cache;
-        }
-
-        cache = new PackTileCache(pack.parsedPackTiles);
-        tileCaches.put(packId, cache);
-        return cache;
-    }
-
-    private static final class PackTileCache {
-        private final List<GroundMarkerPoint> points;
-        private final Set<GroundMarkerPoint> coordinates = new HashSet<>();
-
-        private PackTileCache(List<GroundMarkerPoint> points) {
-            this.points = new ArrayList<>(points);
-            for (GroundMarkerPoint point : points) {
-                coordinates.add(new GroundMarkerPoint(point.getRegionId(), point.getRegionX(),
-                        point.getRegionY(), point.getZ(), null, null));
-            }
-        }
-
-        private boolean contains(WorldPoint point) {
-            return coordinates.contains(new GroundMarkerPoint(point.getRegionID(), point.getRegionX(),
-                    point.getRegionY(), point.getPlane(), null, null));
-        }
-
-        private int indexOf(GroundMarkerPoint coordinate) {
-            for (int i = 0; i < points.size(); i++) {
-                if (coordinate.matchesLocation(points.get(i))) {
-                    return i;
-                }
-            }
-            return -1;
-        }
     }
 }

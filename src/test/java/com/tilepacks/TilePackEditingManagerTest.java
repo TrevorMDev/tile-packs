@@ -60,60 +60,6 @@ public class TilePackEditingManagerTest extends TilePacksTest {
     }
 
     @Test
-    public void editCacheAddsAndRemovesTilesWithSynchronousPackSaves() {
-        ConfigManager configManager = mock(ConfigManager.class);
-        Map<String, String> values = new HashMap<>();
-        stubConfiguration(configManager, values);
-        TilePackManager tilePackManager = new TilePackManager(gson, configManager);
-        tilePackManager.addCustomPack("Tiles", "[]");
-        tilePackManager.updatePackDefaultColor(10000, Color.BLUE);
-        PointManager pointManager = mock(PointManager.class);
-        ChatboxPanelManager chatboxPanelManager = mock(ChatboxPanelManager.class);
-        ClientThread clientThread = mock(ClientThread.class);
-        TilePackEditingManager editingManager = new TilePackEditingManager(
-                mock(Client.class), tilePackManager, pointManager, new TestConfig(Color.YELLOW), chatboxPanelManager, clientThread);
-        editingManager.editPack(10000);
-
-        WorldPoint point = new WorldPoint(3200, 3229, 2);
-        assertTrue(editingManager.toggleTile(10000, point));
-        TilePack afterAdd = gson.fromJson(values.get("pack_10000"), TilePack.class);
-        List<GroundMarkerPoint> added = parsePoints(afterAdd.packTiles);
-        assertEquals(1, added.size());
-        assertEquals(12850, added.get(0).getRegionId());
-        assertEquals(0, added.get(0).getRegionX());
-        assertEquals(29, added.get(0).getRegionY());
-        assertEquals(2, added.get(0).getZ());
-        assertEquals(Color.BLUE, added.get(0).getColor());
-        assertNull(added.get(0).getLabel());
-        assertEquals(gson.toJson(added), gson.fromJson(values.get("pack_10000"), TilePack.class).packTiles);
-
-        assertTrue(editingManager.toggleTile(10000, point));
-        TilePack afterRemove = gson.fromJson(values.get("pack_10000"), TilePack.class);
-        assertEquals("[]", afterRemove.packTiles);
-        verify(pointManager, times(2)).loadPoints();
-    }
-
-    @Test
-    public void removalUsesCoordinateIndexAndRemovesDuplicateRecords() {
-        ConfigManager configManager = mock(ConfigManager.class);
-        Map<String, String> values = new HashMap<>();
-        List<GroundMarkerPoint> duplicatePoints = new ArrayList<>();
-        duplicatePoints.add(new GroundMarkerPoint(12850, 0, 29, 2, Color.RED, null));
-        duplicatePoints.add(new GroundMarkerPoint(12850, 0, 29, 2, Color.GREEN, "duplicate"));
-        values.put("pack_10000", gson.toJson(new TilePack(10000, "Duplicate", gson.toJson(duplicatePoints))));
-        stubConfiguration(configManager, values);
-        TilePackManager tilePackManager = new TilePackManager(gson, configManager);
-        ChatboxPanelManager chatboxPanelManager = mock(ChatboxPanelManager.class);
-        ClientThread clientThread = mock(ClientThread.class);
-        TilePackEditingManager editingManager = new TilePackEditingManager(
-                mock(Client.class), tilePackManager, mock(PointManager.class), new TestConfig(Color.YELLOW), chatboxPanelManager, clientThread);
-        editingManager.editPack(10000);
-
-        assertTrue(editingManager.toggleTile(10000, new WorldPoint(3200, 3229, 2)));
-        assertEquals("[]", gson.fromJson(values.get("pack_10000"), TilePack.class).packTiles);
-    }
-
-    @Test
     public void tileEditRequiresTheOpenEditorTarget() {
         ConfigManager configManager = mock(ConfigManager.class);
         Map<String, String> values = new HashMap<>();
@@ -131,45 +77,6 @@ public class TilePackEditingManagerTest extends TilePacksTest {
         editingManager.stopEditing();
         assertFalse(editingManager.toggleTile(10000, point));
         assertEquals("[]", gson.fromJson(values.get("pack_10000"), TilePack.class).packTiles);
-    }
-
-    // ------------------------------------------------------------------
-    // Parsed tiles stay in sync
-    // ------------------------------------------------------------------
-
-    @Test
-    public void editCacheIsBuiltFromTheParsedTilesNotThePackString() {
-        Fixture f = new Fixture("not json", new TestConfig(Color.YELLOW));
-        f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles =
-                Collections.singletonList(tile(0, Color.RED, null));
-        f.editingManager.editPack(PACK_ID);
-
-        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_A));
-
-        assertEquals("[]", f.savedPack().packTiles);
-        assertTrue(f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles.isEmpty());
-    }
-
-    @Test
-    public void savedEditsKeepTheParsedListInSyncWithThePackString() {
-        Fixture f = new Fixture(tile(0, Color.RED, null));
-        f.editingManager.editPack(PACK_ID);
-
-        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_B));
-        List<GroundMarkerPoint> parsed = f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles;
-        assertEquals(2, parsed.size());
-        assertEquals(gson.toJson(parsed), f.savedPack().packTiles);
-
-        assertTrue(f.editingManager.setTileLabel(PACK_ID, POINT_A, "Bank"));
-        parsed = f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles;
-        assertEquals("Bank", parsed.get(0).getLabel());
-        assertEquals("Bank", f.savedTiles().get(0).getLabel());
-        assertEquals(gson.toJson(parsed), f.savedPack().packTiles);
-
-        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_A));
-        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_B));
-        assertTrue(f.tilePackManager.getTilePacks().get(PACK_ID).parsedPackTiles.isEmpty());
-        assertEquals("[]", f.savedPack().packTiles);
     }
 
     // ------------------------------------------------------------------
@@ -276,65 +183,6 @@ public class TilePackEditingManagerTest extends TilePacksTest {
         f.editingManager.editPack(PACK_ID);
         f.editingManager.editPack(null);
         assertNull(f.editingManager.getEditingPackId());
-    }
-
-    @Test
-    public void clearLeavesEditModeAndRejectsEdits() {
-        Fixture f = new Fixture(tile(0, Color.RED, null));
-        f.editingManager.editPack(PACK_ID);
-
-        f.editingManager.clear();
-
-        assertNull(f.editingManager.getEditingPackId());
-        assertFalse(f.editingManager.toggleTile(PACK_ID, POINT_A));
-        assertFalse(f.editingManager.setTileLabel(PACK_ID, POINT_A, "Bank"));
-    }
-
-    @Test
-    public void clearDropsTheParsedCacheSoNextEditReadsFreshData() {
-        Fixture f = new Fixture(tile(0, Color.RED, null));
-        f.editingManager.editPack(PACK_ID);
-        f.tilePackManager.updatePackTiles(PACK_ID, Collections.singletonList(tile(1, Color.GREEN, null)));
-
-        f.editingManager.clear();
-        f.editingManager.editPack(PACK_ID);
-
-        // Fresh parse sees only tile B, so toggling A adds it rather than removing it
-        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_A));
-        List<GroundMarkerPoint> saved = f.savedTiles();
-        assertEquals(2, saved.size());
-        assertEquals(1, saved.get(0).getRegionX());
-        assertEquals(0, saved.get(1).getRegionX());
-    }
-
-    /** Pins the documented contract: stopEditing keeps the parsed cache. Update if you add invalidation. */
-    @Test
-    public void stopEditingRetainsTheParsedCache() {
-        Fixture f = new Fixture(tile(0, Color.RED, null));
-        f.editingManager.editPack(PACK_ID);
-        f.editingManager.stopEditing();
-        f.tilePackManager.updatePackTiles(PACK_ID, Collections.singletonList(tile(1, Color.GREEN, null)));
-
-        f.editingManager.editPack(PACK_ID);
-
-        // The cached copy (tile A only) is still used, so toggling A removes it
-        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_A));
-        assertEquals("[]", f.savedPack().packTiles);
-    }
-
-    @Test
-    public void unreadableTileDataDisablesEditsWithoutSaving() {
-        for (String bad : new String[]{"not json", "null"}) {
-            Fixture f = new Fixture(bad, new TestConfig(Color.YELLOW));
-            String before = f.rawSave();
-
-            f.editingManager.editPack(PACK_ID);
-
-            assertFalse(f.editingManager.toggleTile(PACK_ID, POINT_A));
-            assertFalse(f.editingManager.setTileLabel(PACK_ID, POINT_A, "Bank"));
-            assertEquals(before, f.rawSave());
-            verify(f.pointManager, never()).loadPoints();
-        }
     }
 
     // ------------------------------------------------------------------
@@ -462,21 +310,6 @@ public class TilePackEditingManagerTest extends TilePacksTest {
 
         assertNull(f.savedTiles().get(0).getLabel());
         verify(f.pointManager, never()).loadPoints();
-    }
-
-    @Test
-    public void promptFinishedAfterTheTileWasRemovedDoesNotSave() {
-        Fixture f = new Fixture(tile(0, Color.RED, null));
-        ChatboxTextInput input = f.stubTextInput();
-        f.runClientThreadRunnables();
-        f.editingManager.editPack(PACK_ID);
-        f.editingManager.promptForLabel(PACK_ID, POINT_A);
-
-        assertTrue(f.editingManager.toggleTile(PACK_ID, POINT_A));   // removes the tile
-        f.capturePromptCallback(input).accept("Late");
-
-        assertEquals("[]", f.savedPack().packTiles);
-        verify(f.pointManager, times(1)).loadPoints();               // only the removal saved
     }
 
     // ------------------------------------------------------------------

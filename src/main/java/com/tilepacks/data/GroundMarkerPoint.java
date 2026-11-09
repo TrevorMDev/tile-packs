@@ -2,9 +2,11 @@ package com.tilepacks.data;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import net.runelite.api.coords.WorldPoint;
 
 import javax.annotation.Nullable;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * Used for serialization of ground marker points.
@@ -35,5 +37,12 @@ public class GroundMarkerPoint {
                 && point.getRegionX() == regionX
                 && point.getRegionY() == regionY
                 && point.getZ() == z;
+    }
+
+    public boolean matchesLocation(WorldPoint point) {
+        return point.getRegionID() == regionId
+                && point.getRegionX() == regionX
+                && point.getRegionY() == regionY
+                && point.getPlane() == z;
     }
 }

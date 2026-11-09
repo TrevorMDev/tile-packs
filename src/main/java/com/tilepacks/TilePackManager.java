@@ -120,7 +120,7 @@ public class TilePackManager {
             }
             List<GroundMarkerPoint> parsed = new ArrayList<>(points);
             parsed.removeIf(Objects::isNull);
-            return Collections.unmodifiableList(parsed);
+            return parsed;
         } catch (RuntimeException e) {
             log.warn("Unable to parse tile data", e);
             return null;
@@ -263,7 +263,7 @@ public class TilePackManager {
             return;
         }
 
-        List<GroundMarkerPoint> snapshot = Collections.unmodifiableList(new ArrayList<>(points));
+        List<GroundMarkerPoint> snapshot = new ArrayList<>(points);
         pack.packTiles = gson.toJson(snapshot, TILE_LIST_TYPE);
         pack.parsedPackTiles = snapshot;
         savePack(pack);
