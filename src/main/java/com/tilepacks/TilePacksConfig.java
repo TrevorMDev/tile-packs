@@ -1,9 +1,6 @@
 package com.tilepacks;
 
-import net.runelite.client.config.Alpha;
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.*;
 
 import java.awt.*;
 
@@ -73,5 +70,24 @@ public interface TilePacksConfig extends Config {
     )
     default int fillOpacity() {
         return 50;
+    }
+
+    @Range(min = 0, max = 100)
+    @ConfigItem(
+            keyName = "overrideOpacity",
+            name = "Override Opacity",
+            description = "If Override Opacity Active is checked, all tile lines will use this opacity (0-100)"
+    )
+    default int overrideOpacity() {
+        return 100;
+    }
+
+    @ConfigItem(
+            keyName = "overrideOpacityActive",
+            name = "Override Opacity Active",
+            description = "When checked, all tile lines will render with the selected opacity"
+    )
+    default boolean overrideOpacityActive() {
+        return false;
     }
 }

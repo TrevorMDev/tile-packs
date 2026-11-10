@@ -115,7 +115,8 @@ public class GroundMarkerOverlay extends Overlay {
 
         Polygon poly = Perspective.getCanvasTilePoly(client, lp);
         if (poly != null) {
-            OverlayUtil.renderPolygon(graphics, poly, color, new Color(0, 0, 0, config.fillOpacity()), borderStroke);
+            OverlayUtil.renderPolygon(graphics, poly, applyOverrideOpacity(color, config),
+                    new Color(0, 0, 0, config.fillOpacity()), borderStroke);
         }
 
         if (!Strings.isNullOrEmpty(label)) {
@@ -124,5 +125,14 @@ public class GroundMarkerOverlay extends Overlay {
                 OverlayUtil.renderTextLocation(graphics, canvasTextLocation, label, color);
             }
         }
+    }
+
+    /** Returns the color with the global override opacity applied, if enabled. The RGB stays the same. */
+    private Color applyOverrideOpacity(Color color, TilePacksConfig config) {
+        if (!config.overrideOpacityActive()) {
+            return color;
+        }
+        int alpha = Math.round(config.overrideOpacity() * 255f / 100f);
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 }
