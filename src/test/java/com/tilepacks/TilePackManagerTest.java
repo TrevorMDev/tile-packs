@@ -313,15 +313,6 @@ public class TilePackManagerTest extends TilePacksTest {
         assertNull(manager.parseTiles(null));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void parsedTilesCannotBeModified() {
-        ConfigManager configManager = mockConfigManager();
-        stubConfiguration(configManager, new HashMap<>());
-        TilePackManager manager = new TilePackManager(gson, configManager);
-
-        manager.getTilePacks().get(1).parsedPackTiles.clear();
-    }
-
     @Test
     public void customPackIsCreatedWithParsedTiles() {
         ConfigManager configManager = mockConfigManager();

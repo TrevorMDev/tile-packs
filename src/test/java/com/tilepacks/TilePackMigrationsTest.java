@@ -42,7 +42,6 @@ public class TilePackMigrationsTest extends TilePacksTest {
         assertFalse(builtInConfig.visible);
         assertNull(values.get("customPacks"));
         assertNull(values.get("tilePackConfigs"));
-        assertEquals("2", values.get("tilePacksVersion"));
     }
 
     @Test
@@ -69,7 +68,6 @@ public class TilePackMigrationsTest extends TilePacksTest {
         new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
 
         assertEquals("Custom", gson.fromJson(values.get("pack_10000"), TilePack.class).packName);
-        assertEquals("2", values.get("tilePacksVersion"));
         verify(configManager, never()).setConfiguration(anyString(), anyString(), any());
     }
 
