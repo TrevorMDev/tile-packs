@@ -18,7 +18,7 @@ public class EditPackLabel extends JLabel {
     private static final ImageIcon EDIT_ICON_HOVER;
 
     static {
-        BufferedImage editIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "edit.png");
+        BufferedImage editIcon = ImageUtil.loadImageResource(TilePacksPlugin.class, "edit_icon.png");
         EDIT_ICON = new ImageIcon(editIcon);
         EDIT_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(editIcon, 0.50f));
     }

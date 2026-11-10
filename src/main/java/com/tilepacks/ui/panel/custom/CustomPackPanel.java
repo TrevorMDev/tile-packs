@@ -34,6 +34,8 @@ public class CustomPackPanel extends PluginPanel {
     private final JLabel discordShare;
     private final JLabel discordShareButton;
 
+    private JDialog activeDialog;
+
     public CustomPackPanel(TilePackManager tilePackManager, PointManager pointManager,
                            Gson gson, TilePacksPanel rootPanel, TilePacksListPanel tilePacksList) {
         super();
@@ -74,10 +76,18 @@ public class CustomPackPanel extends PluginPanel {
      * Validation happens when submitting. Errors are shown inline and the dialog stays open.
      */
     private void showPackDialog(boolean withTiles) {
+        // Already open: just bring it forward instead of stacking another one
+        if (activeDialog != null && activeDialog.isDisplayable()) {
+            activeDialog.toFront();
+            activeDialog.requestFocus();
+            return;
+        }
+
         final Window owner = SwingUtilities.getWindowAncestor(this);
         final JDialog dialog = new JDialog(owner, withTiles ? "Import Pack" : "Create Empty Pack",
-                Dialog.ModalityType.APPLICATION_MODAL);
+                Dialog.ModalityType.MODELESS);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        activeDialog = dialog;
 
         final JTextField nameField = new JTextField(24);
         final JTextArea tilesArea = new JTextArea(4, 24);
@@ -151,6 +161,13 @@ public class CustomPackPanel extends PluginPanel {
             @Override
             public void windowOpened(WindowEvent e) {
                 nameField.requestFocusInWindow();
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                if (activeDialog == dialog) {
+                    activeDialog = null;
+                }
             }
         });
 

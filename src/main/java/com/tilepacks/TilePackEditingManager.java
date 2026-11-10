@@ -126,7 +126,7 @@ public class TilePackEditingManager {
                 point.getRegionY(), point.getPlane(), resolveTileColor(pack), null);
 
         int index = pack.indexOf(point);
-        if(index > 0) {
+        if (index >= 0) {
             pack.parsedPackTiles.remove(index);
         } else {
             pack.parsedPackTiles.add(newPoint);
