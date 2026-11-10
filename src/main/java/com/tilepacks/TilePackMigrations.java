@@ -139,5 +139,9 @@ public class TilePackMigrations {
                 .type(ChatMessageType.CONSOLE)
                 .runeLiteFormattedMessage("Tile packs now supports per pack edits. Click the pencil icon on an enabled pack to try it out.")
                 .build());
+        chatMessageManager.queue(QueuedMessage.builder()
+                .type(ChatMessageType.CONSOLE)
+                .runeLiteFormattedMessage("Tile packs new global tile opacity override now available. It's in the plugin config, not the main panel.")
+                .build());
     }
 }
