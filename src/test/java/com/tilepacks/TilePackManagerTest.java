@@ -3,9 +3,12 @@ package com.tilepacks;
 import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.data.TilePack;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.config.Keybind;
 import org.junit.Test;
 
 import java.awt.Color;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -413,6 +416,42 @@ public class TilePackManagerTest extends TilePacksTest {
         assertTrue(manager.getFullOverridePackIds().contains(1));
         TilePack reloaded = new TilePackManager(gson, configManager).getTilePacks().get(1);
         assertEquals(updated.parsedPackTiles, reloaded.parsedPackTiles);
+    }
+
+    @Test
+    public void bundledPackHotkeySavesAsLightRecordAndReloads() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        stubConfiguration(configManager, values);
+        TilePackManager manager = new TilePackManager(gson, configManager);
+        String originalTiles = manager.getTilePacks().get(1).packTiles;
+
+        manager.updatePackHotkey(1, new Keybind(KeyEvent.VK_F1, InputEvent.CTRL_DOWN_MASK));
+
+        TilePack saved = gson.fromJson(values.get("pack_1"), TilePack.class);
+        assertNull(saved.packName);
+        assertEquals(KeyEvent.VK_F1, saved.hotkey.getKeyCode());
+        assertFalse(manager.getFullOverridePackIds().contains(1));
+        TilePack reloaded = new TilePackManager(gson, configManager).getTilePacks().get(1);
+        assertEquals(KeyEvent.VK_F1, reloaded.hotkey.getKeyCode());
+        assertEquals(originalTiles, reloaded.packTiles);
+
+        manager.updatePackHotkey(1, null);
+        assertNull(new TilePackManager(gson, configManager).getTilePacks().get(1).hotkey);
+    }
+
+    @Test
+    public void hotkeySurvivesPreparingForEditing() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        stubConfiguration(configManager, values);
+        TilePackManager manager = new TilePackManager(gson, configManager);
+        manager.updatePackHotkey(1, new Keybind(KeyEvent.VK_F2, 0));
+
+        TilePack prepared = manager.preparePackForEditing(1);
+
+        assertEquals(KeyEvent.VK_F2, prepared.hotkey.getKeyCode());
+        assertEquals(KeyEvent.VK_F2, gson.fromJson(values.get("pack_1"), TilePack.class).hotkey.getKeyCode());
     }
 
     private static GroundMarkerPoint point(int regionX, String label) {

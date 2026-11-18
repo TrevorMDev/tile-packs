@@ -44,6 +44,7 @@ Selecting this will show the tile packs and all their options.
 - The invisible icon ![invisible icon](src/main/resources/com/tilepacks/invisible_icon.png) means the tile pack is hidden. See [Searching and Filtering](#Searching and Filtering).
 - The delete icon ![delete icon](src/main/resources/com/tilepacks/delete_icon.png) is to delete custom packs. This is permanent and they cannot be recovered. Default packs cannot be deleted, but they can be hidden.
 - The edit icon ![edit icon](src/main/resources/com/tilepacks/edit_icon.png) will take you into edit mode for a pack. This only appears for packs that are enabled.
+- The hotkey icon ![hotkey icon](src/main/resources/com/tilepacks/hotkey_icon.png) will allow you to toggle a pack when the hotkey is pressed. Multiple packs with the same hotkey will all be toggled.
 
 ---
 

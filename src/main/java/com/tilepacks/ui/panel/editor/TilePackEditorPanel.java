@@ -3,10 +3,9 @@ package com.tilepacks.ui.panel.editor;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.TilePacksConfig;
 import com.tilepacks.data.TilePack;
-import com.tilepacks.ui.panel.TilePacksPanel;
+import com.tilepacks.ui.panel.TilePacksContainerPanel;
 import com.tilepacks.ui.panel.editor.actions.BackLabel;
 import com.tilepacks.ui.panel.editor.actions.PreviewButton;
-import com.tilepacks.ui.panel.pack.TilePackPanel;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
@@ -32,7 +31,7 @@ public class TilePackEditorPanel extends PluginPanel {
     private final TilePackManager tilePackManager;
     private final ColorPickerManager colorPickerManager;
     private final TilePacksConfig config;
-    private final TilePacksPanel rootPanel;
+    private final TilePacksContainerPanel rootPanel;
     private final JTextField titleField = new JTextField();
     private final PreviewButton defaultColorButton = new PreviewButton();
     private final Timer saveTimer;
@@ -43,7 +42,7 @@ public class TilePackEditorPanel extends PluginPanel {
 
     public TilePackEditorPanel(TilePackManager tilePackManager,
                                ColorPickerManager colorPickerManager, TilePacksConfig config,
-                               TilePacksPanel rootPanel) {
+                               TilePacksContainerPanel rootPanel) {
         this.tilePackManager = tilePackManager;
         this.colorPickerManager = colorPickerManager;
         this.config = config;

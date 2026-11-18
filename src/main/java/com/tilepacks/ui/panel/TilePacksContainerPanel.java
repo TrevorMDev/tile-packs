@@ -18,22 +18,22 @@ import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 
 /** Root navigation panel for the pack list and the pack editor. */
-public class TilePacksPanel extends PluginPanel {
+public class TilePacksContainerPanel extends PluginPanel {
     private final TilePackManager tilePackManager;
     private final TilePackEditingManager tilePackEditingManager;
     private final TilePacksListPanel listPanel;
     private final TilePackEditorPanel editorPanel;
     private JPanel activePanel;
 
-    public TilePacksPanel(TilePackManager tilePackManager,
-                          TilePackEditingManager tilePackEditingManager,
-                          PointManager pointManager,
-                          FilterManager filterManager,
-                          ChatMessageManager chatMessageManager,
-                          Gson gson,
-                          Client client,
-                          ColorPickerManager colorPickerManager,
-                          TilePacksConfig config) {
+    public TilePacksContainerPanel(TilePackManager tilePackManager,
+                                   TilePackEditingManager tilePackEditingManager,
+                                   PointManager pointManager,
+                                   FilterManager filterManager,
+                                   ChatMessageManager chatMessageManager,
+                                   Gson gson,
+                                   Client client,
+                                   ColorPickerManager colorPickerManager,
+                                   TilePacksConfig config) {
         this.tilePackManager = tilePackManager;
                 this.tilePackEditingManager = tilePackEditingManager;
         setLayout(new BorderLayout());
@@ -106,6 +106,11 @@ public class TilePacksPanel extends PluginPanel {
         if (editorPanel != null) {
             editorPanel.clearPack();
         }
+    }
+
+    /** Rebuilds the pack list, e.g. after a hotkey toggled a pack. Safe from any thread. */
+    public void refreshList() {
+        SwingUtilities.invokeLater(listPanel::createTilePackPanels);
     }
 
     @Override

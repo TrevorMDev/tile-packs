@@ -6,13 +6,8 @@ import com.tilepacks.PointManager;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.TilePack;
 import com.tilepacks.ui.panel.TilePacksListPanel;
-import com.tilepacks.ui.panel.TilePacksPanel;
-import com.tilepacks.ui.panel.pack.actions.CopyToClipboardLabel;
-import com.tilepacks.ui.panel.pack.actions.DeleteCustomPackLabel;
-import com.tilepacks.ui.panel.pack.actions.EditPackLabel;
-import com.tilepacks.ui.panel.pack.actions.HelpLinkLabel;
-import com.tilepacks.ui.panel.pack.actions.TogglePackLabel;
-import com.tilepacks.ui.panel.pack.actions.ToggleVisibleLabel;
+import com.tilepacks.ui.panel.TilePacksContainerPanel;
+import com.tilepacks.ui.panel.pack.actions.*;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.ui.ColorScheme;
@@ -42,7 +37,7 @@ public class TilePackPanel extends JPanel {
     private final ChatMessageManager chatMessageManager;
     private final Gson gson;
     private final TilePacksListPanel tilePacksList;
-    private final TilePacksPanel rootPanel;
+    private final TilePacksContainerPanel rootPanel;
 
     private final TilePack tilePack;
 
@@ -50,6 +45,7 @@ public class TilePackPanel extends JPanel {
     private final JPanel controlPanel = new JPanel();
     private final JLabel packName;
     private final JLabel deleteCustomPack;
+    private final JLabel hotkey;
     private final EditPackLabel editPack;
     private final JLabel toggleVisible;
     private final JLabel copyToClipboard;
@@ -61,7 +57,7 @@ public class TilePackPanel extends JPanel {
                   ChatMessageManager chatMessageManager,
                   Gson gson,
                   TilePacksListPanel tilePacksList,
-                  TilePacksPanel rootPanel,
+                  TilePacksContainerPanel rootPanel,
                   TilePack tilePack
     ) {
         super();
@@ -94,6 +90,9 @@ public class TilePackPanel extends JPanel {
         controlPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         controlPanel.setBorder(new MatteBorder(1, 0, 0, 0, ColorScheme.DARK_GRAY_COLOR));
         add(controlPanel, BorderLayout.SOUTH);
+
+        hotkey = new HotkeyLabel(tilePackManager, tilePack.id);
+        controlPanel.add(hotkey);
 
         editPack = new EditPackLabel(tilePackManager, rootPanel, tilePack.id);
         editPack.setPreferredSize(new Dimension(CONTROL_SIZE, CONTROL_SIZE));

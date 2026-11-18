@@ -6,7 +6,7 @@ import com.tilepacks.TilePackImportValidator;
 import com.tilepacks.TilePackManager;
 import com.tilepacks.data.GroundMarkerPoint;
 import com.tilepacks.ui.panel.TilePacksListPanel;
-import com.tilepacks.ui.panel.TilePacksPanel;
+import com.tilepacks.ui.panel.TilePacksContainerPanel;
 import net.runelite.client.ui.PluginPanel;
 
 import javax.swing.*;
@@ -25,7 +25,7 @@ public class CustomPackPanel extends PluginPanel {
     private final TilePackManager tilePackManager;
     private final PointManager pointManager;
     private final Gson gson;
-    private final TilePacksPanel rootPanel;
+    private final TilePacksContainerPanel rootPanel;
     private final TilePacksListPanel tilePacksList;
 
     private final JButton importPackButton;
@@ -37,7 +37,7 @@ public class CustomPackPanel extends PluginPanel {
     private JDialog activeDialog;
 
     public CustomPackPanel(TilePackManager tilePackManager, PointManager pointManager,
-                           Gson gson, TilePacksPanel rootPanel, TilePacksListPanel tilePacksList) {
+                           Gson gson, TilePacksContainerPanel rootPanel, TilePacksListPanel tilePacksList) {
         super();
         this.tilePackManager = tilePackManager;
         this.pointManager = pointManager;

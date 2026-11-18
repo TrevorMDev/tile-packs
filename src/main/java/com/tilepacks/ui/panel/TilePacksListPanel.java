@@ -52,7 +52,7 @@ public class TilePacksListPanel extends JPanel {
     private final FilterManager filterManager;
     private final ChatMessageManager chatMessageManager;
     private final Gson gson;
-    private final TilePacksPanel rootPanel;
+    private final TilePacksContainerPanel rootPanel;
 
     private final HeaderPanel headerPanel;
     private final JPanel listContainer = new JPanel();
@@ -62,7 +62,7 @@ public class TilePacksListPanel extends JPanel {
                               FilterManager filterManager,
                               ChatMessageManager chatMessageManager,
                               Gson gson,
-                              TilePacksPanel rootPanel
+                              TilePacksContainerPanel rootPanel
     ) {
         super();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));

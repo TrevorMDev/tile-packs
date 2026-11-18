@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.inject.Provides;
 import com.tilepacks.ui.overlay.GroundMarkerMinimapOverlay;
 import com.tilepacks.ui.overlay.GroundMarkerOverlay;
-import com.tilepacks.ui.panel.TilePacksPanel;
+import com.tilepacks.ui.panel.TilePacksContainerPanel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.ChatMessageType;
@@ -18,6 +18,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.ProfileChanged;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
+import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -53,6 +54,8 @@ public class TilePacksPlugin extends Plugin {
     @Inject
     private ChatboxPanelManager chatboxPanelManager;
     @Inject
+    private KeyManager keyManager;
+    @Inject
     private ClientThread clientThread;
 
     private GroundMarkerMinimapOverlay minimapOverlay;
@@ -61,7 +64,8 @@ public class TilePacksPlugin extends Plugin {
     private TilePackEditingManager tilePackEditingManager;
     private PointManager pointManager;
     private FilterManager filterManager;
-    private TilePacksPanel panel;
+    private TilePackHotkeyListener hotkeyListener;
+    private TilePacksContainerPanel panel;
     private NavigationButton navButton;
 
     @Override
@@ -86,7 +90,7 @@ public class TilePacksPlugin extends Plugin {
         minimapOverlay = new GroundMarkerMinimapOverlay(pointManager, client, config);
         overlayManager.add(overlay);
         overlayManager.add(minimapOverlay);
-        panel = new TilePacksPanel(tilePackManager, tilePackEditingManager, pointManager, filterManager, chatMessageManager,
+        panel = new TilePacksContainerPanel(tilePackManager, tilePackEditingManager, pointManager, filterManager, chatMessageManager,
                 gson, client, colorPickerManager, config);
 
         final BufferedImage icon = ImageUtil.loadImageResource(TilePacksPlugin.class, "tilepacks_icon.png");
@@ -98,14 +102,16 @@ public class TilePacksPlugin extends Plugin {
                 .panel(panel)
                 .build();
 
-        pointManager.loadPoints();
-
-        log.debug("Tile Packs Plugin started");
-        if (config.hidePlugin()) {
-            return;
+        if (!config.hidePlugin()) {
+            clientToolbar.addNavigation(navButton);
         }
 
-        clientToolbar.addNavigation(navButton);
+        pointManager.loadPoints();
+
+        hotkeyListener = new TilePackHotkeyListener(tilePackManager, pointManager, clientThread, panel::refreshList);
+        keyManager.registerKeyListener(hotkeyListener);
+
+        log.debug("Tile Packs Plugin started");
 
     }
 
@@ -116,6 +122,9 @@ public class TilePacksPlugin extends Plugin {
         }
         if (tilePackEditingManager != null) {
             tilePackEditingManager.stopEditing();
+        }
+        if (hotkeyListener != null) {
+            keyManager.unregisterKeyListener(hotkeyListener);
         }
         overlayManager.remove(overlay);
         overlayManager.remove(minimapOverlay);

@@ -1,6 +1,7 @@
 package com.tilepacks.data;
 
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.client.config.Keybind;
 
 import javax.annotation.Nullable;
 import java.awt.Color;
@@ -18,6 +19,8 @@ public class TilePack {
     @Nullable
     public Color defaultColor;
     public boolean visible = true;
+    @Nullable
+    public Keybind hotkey;
 
     public TilePack() {
     }
@@ -38,6 +41,12 @@ public class TilePack {
     public TilePack(Integer id, boolean visible) {
         this.id = id;
         this.visible = visible;
+    }
+
+    public TilePack(Integer id, boolean visible, Keybind hotkey) {
+        this.id = id;
+        this.visible = visible;
+        this.hotkey = hotkey;
     }
 
     public int indexOf(WorldPoint point) {

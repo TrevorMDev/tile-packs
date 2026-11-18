@@ -2,7 +2,7 @@ package com.tilepacks.ui.panel.pack.actions;
 
 import com.tilepacks.TilePackManager;
 import com.tilepacks.TilePacksPlugin;
-import com.tilepacks.ui.panel.TilePacksPanel;
+import com.tilepacks.ui.panel.TilePacksContainerPanel;
 import net.runelite.client.util.ImageUtil;
 
 import javax.swing.ImageIcon;
@@ -26,7 +26,7 @@ public class EditPackLabel extends JLabel {
     private final TilePackManager tilePackManager;
     private final Integer packId;
 
-    public EditPackLabel(TilePackManager tilePackManager, TilePacksPanel rootPanel, Integer packId) {
+    public EditPackLabel(TilePackManager tilePackManager, TilePacksContainerPanel rootPanel, Integer packId) {
         this.tilePackManager = tilePackManager;
         this.packId = packId;
 

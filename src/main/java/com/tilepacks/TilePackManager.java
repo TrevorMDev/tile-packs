@@ -9,7 +9,9 @@ import lombok.Value;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.config.Keybind;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.awt.Color;
 import java.io.InputStream;
@@ -71,7 +73,9 @@ public class TilePackManager {
                     parsed.put(savedPack.id, savedPack);
                     fullOverridePackIds.add(savedPack.id);
                 } else if (resourcePack != null) {
+                    // Packs in this path are not fully overridden because no tile edits have been made. So their configs only have the per pack saved items.
                     resourcePack.visible = savedPack.visible;
+                    resourcePack.hotkey = savedPack.hotkey;
                 }
             }
 
@@ -204,7 +208,7 @@ public class TilePackManager {
         if (pack.id >= 10000 || fullOverridePackIds.contains(pack.id)) {
             savePack(pack);
         } else {
-            savePack(new TilePack(pack.id, pack.visible));
+            savePack(new TilePack(pack.id, pack.visible, pack.hotkey));
         }
     }
 
@@ -268,6 +272,16 @@ public class TilePackManager {
         pack.parsedPackTiles = snapshot;
         savePack(pack);
         fullOverridePackIds.add(packId);
+    }
+
+    /** Saves the per-pack hotkey. Null clears it. */
+    public void updatePackHotkey(Integer packId, @Nullable Keybind hotkey) {
+        TilePack pack = tilePacks.get(packId);
+        if (pack == null) {
+            return;
+        }
+        pack.hotkey = hotkey;
+        updatePack(pack);
     }
 
     private boolean isFullPackRecord(TilePack pack) {
