@@ -61,7 +61,7 @@ public class TilePackMigrationsTest extends TilePacksTest {
     public void alreadyMigratedConfigurationIsNotChanged() {
         ConfigManager configManager = mockConfigManager();
         Map<String, String> values = new HashMap<>();
-        values.put("tilePacksVersion", "2");
+        values.put("tilePacksVersion", "4");
         values.put("pack_10000", "{\"id\":10000,\"packName\":\"Custom\",\"packTiles\":\"[]\",\"visible\":true}");
         stubConfiguration(configManager, values);
 
@@ -100,6 +100,68 @@ public class TilePackMigrationsTest extends TilePacksTest {
         } finally {
             assertNotNull(values.get("customPacks"));
             assertNull(values.get("tilePacksVersion"));
+        }
+    }
+
+    @Test
+    public void migratesActiveOverrideOpacityToAll() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        values.put("tilePacksVersion", "3");
+        values.put("overrideOpacityActive", "true");
+        stubConfiguration(configManager, values);
+
+        new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
+
+        assertEquals("ALL", values.get("overrideOpacityMode"));
+        assertNull(values.get("overrideOpacityActive"));
+        assertEquals("4", values.get("tilePacksVersion"));
+    }
+
+    @Test
+    public void migratesInactiveOverrideOpacityToOff() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        values.put("tilePacksVersion", "3");
+        values.put("overrideOpacityActive", "false");
+        stubConfiguration(configManager, values);
+
+        new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
+
+        assertEquals("OFF", values.get("overrideOpacityMode"));
+        assertNull(values.get("overrideOpacityActive"));
+        assertEquals("4", values.get("tilePacksVersion"));
+    }
+
+    @Test
+    public void missingOverrideOpacityActiveWritesNoMode() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        values.put("tilePacksVersion", "3");
+        stubConfiguration(configManager, values);
+
+        new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
+
+        assertNull(values.get("overrideOpacityMode"));
+        assertEquals("4", values.get("tilePacksVersion"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void failedOverrideOpacityReadBackKeepsOldValue() {
+        ConfigManager configManager = mockConfigManager();
+        Map<String, String> values = new HashMap<>();
+        values.put("tilePacksVersion", "3");
+        values.put("overrideOpacityActive", "true");
+        stubConfiguration(configManager, values);
+        doAnswer(invocation -> null)
+                .when(configManager).setConfiguration(anyString(), anyString(), any());
+
+        try {
+            new TilePackMigrations(gson, configManager, mock(ChatMessageManager.class)).migrateToLatest();
+        } finally {
+            assertEquals("true", values.get("overrideOpacityActive"));
+            assertNull(values.get("overrideOpacityMode"));
+            assertEquals("3", values.get("tilePacksVersion"));
         }
     }
 

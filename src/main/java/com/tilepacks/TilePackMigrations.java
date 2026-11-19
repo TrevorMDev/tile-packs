@@ -19,13 +19,18 @@ import java.util.Set;
 
 @Slf4j
 public class TilePackMigrations {
+    // The internal config group, used for stuff saved in the config that is not a plugin config.
     private static final String CONFIG_GROUP = "tilePacks";
     private static final String PACK_PREFIX = "pack_";
     private static final String CUSTOM_PACKS = "customPacks";
     private static final String TILE_PACK_CONFIGS = "tilePackConfigs";
     private static final String TILE_PACKS_VERSION = "tilePacksVersion";
+    // The user facing config group, which is lowercase unlike the saved pack data group above.
+    private static final String USER_CONFIG_GROUP = "tilepacks";
+    private static final String OVERRIDE_OPACITY_ACTIVE = "overrideOpacityActive";
+    private static final String OVERRIDE_OPACITY_MODE = "overrideOpacityMode";
     // More for reference than actual use.
-    private static final int CURRENT_VERSION = 3;
+    private static final int CURRENT_VERSION = 4;
 
     private final Gson gson;
     private final ConfigManager configManager;
@@ -49,6 +54,10 @@ public class TilePackMigrations {
         if (version < 3) {
             migrateV2toV3();
             saveVersion(3);
+        }
+        if (version < 4) {
+            migrateV3ToV4();
+            saveVersion(4);
         }
     }
 
@@ -143,5 +152,26 @@ public class TilePackMigrations {
                 .type(ChatMessageType.CONSOLE)
                 .runeLiteFormattedMessage("Tile packs new global tile opacity override now available. It's in the plugin config, not the main panel.")
                 .build());
+    }
+
+    /**
+     * The opacity override changed from the boolean overrideOpacityActive to the overrideOpacityMode list.
+     * The new value is saved and read back before the old key is removed, so a failure leaves the old setting untouched.
+     */
+    private void migrateV3ToV4() {
+        String legacyActive = configManager.getConfiguration(USER_CONFIG_GROUP, OVERRIDE_OPACITY_ACTIVE);
+        if (Strings.isNullOrEmpty(legacyActive)) {
+            return;
+        }
+
+        String mode = Boolean.parseBoolean(legacyActive) ? "ALL" : "OFF";
+        configManager.setConfiguration(USER_CONFIG_GROUP, OVERRIDE_OPACITY_MODE, mode);
+
+        String savedMode = configManager.getConfiguration(USER_CONFIG_GROUP, OVERRIDE_OPACITY_MODE);
+        if (!mode.equals(savedMode)) {
+            throw new IllegalStateException("Saved override opacity mode is invalid: " + savedMode);
+        }
+
+        configManager.unsetConfiguration(USER_CONFIG_GROUP, OVERRIDE_OPACITY_ACTIVE);
     }
 }

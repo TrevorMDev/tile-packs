@@ -76,18 +76,35 @@ public interface TilePacksConfig extends Config {
     @ConfigItem(
             keyName = "overrideOpacity",
             name = "Override Opacity",
-            description = "If Override Opacity Active is checked, all tile lines will use this opacity (0-100)"
+            description = "Opacity (0-100) used by Override Opacity Mode"
     )
     default int overrideOpacity() {
         return 100;
     }
 
     @ConfigItem(
-            keyName = "overrideOpacityActive",
-            name = "Override Opacity Active",
-            description = "When checked, all tile lines will render with the selected opacity"
+            keyName = "overrideOpacityMode",
+            name = "Override Opacity Mode",
+            description = "Off: No override. All: Always use Override. Cap: Opacity reduced to Override, but not raised if lower."
     )
-    default boolean overrideOpacityActive() {
-        return false;
+    default OverrideOpacityMode overrideOpacityMode() {
+        return OverrideOpacityMode.OFF;
+    }
+
+    enum OverrideOpacityMode {
+        OFF("Off"),
+        ALL("All"),
+        CAP("Cap");
+
+        private final String label;
+
+        OverrideOpacityMode(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 }

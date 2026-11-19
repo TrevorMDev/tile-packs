@@ -1,35 +1,10 @@
-/*
- * Copyright (c) 2018, TheLonelyDev <https://github.com/TheLonelyDev>
- * Copyright (c) 2018, Adam <Adam@sigterm.info>
- * Copyright (c) 2022, Trevor <https://github.com/TrevorMDev>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 package com.tilepacks.ui.overlay;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
 import com.tilepacks.PointManager;
 import com.tilepacks.TilePacksConfig;
+import com.tilepacks.TilePacksConfig.OverrideOpacityMode;
 import com.tilepacks.data.ColorTileMarker;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
@@ -127,12 +102,18 @@ public class GroundMarkerOverlay extends Overlay {
         }
     }
 
-    /** Returns the color with the global override opacity applied, if enabled. The RGB stays the same. */
-    private Color applyOverrideOpacity(Color color, TilePacksConfig config) {
-        if (!config.overrideOpacityActive()) {
+    /**
+     * Returns the color with the global override opacity applied for the configured mode. The RGB stays the same.
+     * ALL sets the alpha to the override opacity; CAP only lowers alpha that is above it.
+     * Package private and static so it can be unit tested without a client.
+     */
+    static Color applyOverrideOpacity(Color color, TilePacksConfig config) {
+        OverrideOpacityMode mode = config.overrideOpacityMode();
+        if (mode == OverrideOpacityMode.OFF) {
             return color;
         }
-        int alpha = Math.round(config.overrideOpacity() * 255f / 100f);
+        int overrideAlpha = Math.round(config.overrideOpacity() * 255f / 100f);
+        int alpha = mode == OverrideOpacityMode.CAP ? Math.min(color.getAlpha(), overrideAlpha) : overrideAlpha;
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 }
